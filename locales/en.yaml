@@ -1,0 +1,103 @@
+buttons:
+  hsLoginOut: LoginOut
+  hsfullscreen: FullScreen
+  hsexitfullscreen: ExitFullscreen
+  hsrefreshRoute: RefreshRoute
+  hslogin: Login
+  hsadd: Add
+  hsmark: Mark/Cancel
+  hssave: Save
+  hssearch: Search
+  hsexpendAll: Expand All
+  hscollapseAll: Collapse All
+  hssystemSet: Open ProjectConfig
+  hsdelete: Delete
+  hsreload: Reload
+  hscloseCurrentTab: Close CurrentTab
+  hscloseLeftTabs: Close LeftTabs
+  hscloseRightTabs: Close RightTabs
+  hscloseOtherTabs: Close OtherTabs
+  hscloseAllTabs: Close AllTabs
+  hswholeFullScreen: FullScreen
+  hswholeExitFullScreen: ExitFull
+  hscontentFullScreen: Content FullScreen
+  hscontentExitFullScreen: Content ExitFullScreen
+menus:
+  hshome: Home
+  hslogin: Login
+  hsabnormal: Abnormal Page
+  hsfourZeroFour: "404"
+  hsfourZeroOne: "403"
+  hsFive: "500"
+  permission: Permission Manage
+  permissionPage: Page Permission
+  permissionButton: Button Permission
+  # 自定义
+  hsassets: Assets
+  hstransactions: Transactions
+status:
+  hsLoad: Loading...
+login:
+  username: Username
+  password: Password
+  login: Login
+  usernameReg: Please enter username
+  passwordReg: Please enter password
+  passwordRuleReg: The password format should be any combination of 8-18 digits
+# web3
+web3:
+  connect: Connect
+  connectWallet: Connect Wallet
+  disconnect: Disconnect
+account:
+  info: Account Info
+  address: address
+  balance: balance
+assets:
+  assets: Assets
+  asset: Asset
+  balance: Balance
+  operation: Operation
+transaction:
+  transactions: Transactions
+  transactionQueue: Transaction queue
+  queue: Queue
+  history: History
+  sendTokens: Send tokens
+  sendAddress: Send address
+  recipientAddress: Recipient address
+  assetToken: Asset Token
+  amount: Amount
+  # 提示
+  please input recipient address: Please input recipient address
+  please select asset token: Please select asset token
+  please input amount: Please input amount
+  invalid recipient address: Invalid recipient address
+  invalid asset token: Invalid asset token
+  invalid amount: Invalid amount
+wallet:
+  name: Name
+  address: Wallet Address
+  owners: Owner(s)
+  finished: Finished
+  confirmNumber: Confirm Number
+  # 按钮
+  btnAdd: Add
+  btnSend: Send
+  btnRename: Rename
+  btnDelete: Delete
+  btnCancel: Cancel
+  btnConfirm: Confirm
+  btnSubmit: Submit
+  btnSave: Save
+  btnNext: Next
+  btnPrev: Prev
+  btnAddOwner: Add Owner
+  # 提示
+  please input wallet name: Please input wallet name
+  please input wallet address: Please input wallet address
+  please add owners: Please add owners
+  owner is already added: Owner is already added
+  invalid wallet address: Invalid wallet address
+  please select confirm number: Please select confirm number
+  createWallet: Create Wallet

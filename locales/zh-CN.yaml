@@ -1,0 +1,102 @@
+buttons:
+  hsLoginOut: 退出系统
+  hsfullscreen: 全屏
+  hsexitfullscreen: 退出全屏
+  hsrefreshRoute: 刷新路由
+  hslogin: 登录
+  hsadd: 新增
+  hsmark: 标记/取消
+  hssave: 保存
+  hssearch: 搜索
+  hsexpendAll: 全部展开
+  hscollapseAll: 全部折叠
+  hssystemSet: 打开项目配置
+  hsdelete: 删除
+  hsreload: 重新加载
+  hscloseCurrentTab: 关闭当前标签页
+  hscloseLeftTabs: 关闭左侧标签页
+  hscloseRightTabs: 关闭右侧标签页
+  hscloseOtherTabs: 关闭其他标签页
+  hscloseAllTabs: 关闭全部标签页
+  hswholeFullScreen: 全屏
+  hswholeExitFullScreen: 退出全屏
+  hscontentFullScreen: 内容区全屏
+  hscontentExitFullScreen: 内容区退出全屏
+menus:
+  hshome: 首页
+  hslogin: 登录
+  hsabnormal: 异常页面
+  hsfourZeroFour: "404"
+  hsfourZeroOne: "403"
+  hsFive: "500"
+  permission: 权限管理
+  permissionPage: 页面权限
+  permissionButton: 按钮权限
+  # 自定义
+  hsassets: 资产
+  hstransactions: 交易记录
+status:
+  hsLoad: 加载中...
+login:
+  username: 账号
+  password: 密码
+  login: 登录
+  usernameReg: 请输入账号
+  passwordReg: 请输入密码
+  passwordRuleReg: 密码格式应为8-18位数字、字母、符号的任意两种组合
+web3:
+  connect: 连接
+  connectWallet: 连接钱包
+  disconnect: 断开连接
+account:
+  info: 账户信息
+  address: 地址
+  balance: 余额
+assets:
+  assets: 资产
+  asset: 资产
+  balance: 余额
+  operation: 操作
+transaction:
+  transactions: 交易记录
+  transactionQueue: 交易队列
+  queue: 队列
+  history: 历史
+  sendTokens: 发送代币
+  sendAddress: 发送地址
+  recipientAddress: 接收地址
+  assetToken: 资产Token
+  amount: 交易金额
+  # 提示
+  please input recipient address: 请输入接收地址
+  please select asset token: 请选择资产Token
+  please input amount: 请输入交易金额
+  invalid recipient address: 无效的接收地址
+  invalid asset token: 无效的资产Token
+  invalid amount: 无效的金额
+wallet:
+  name: 名称
+  address: 钱包地址
+  owners: 拥有者
+  finished: 完成
+  confirmNumber: 确认数量
+  # 按钮
+  btnAdd: 添加
+  btnSend: 发送
+  btnRename: 重命名
+  btnDelete: 删除
+  btnCancel: 取消
+  btnConfirm: 确认
+  btnSubmit: 提交
+  btnSave: 保存
+  btnNext: 下一步
+  btnPrev: 上一步
+  btnAddOwner: 添加所有者
+  # 提示
+  please input wallet name: 请输入钱包名称
+  please input wallet address: 请输入钱包地址
+  please add owners: 请添加所有者
+  owner is already added: 所有者已经添加
+  invalid wallet address: 无效的钱包地址
+  please select confirm number: 请选择确认数量
+  createWallet: 创建钱包
