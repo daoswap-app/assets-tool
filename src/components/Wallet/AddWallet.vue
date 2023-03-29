@@ -336,10 +336,10 @@ watch(
     </el-form>
     <!-- 操作 -->
     <template #footer>
-      <el-button @click="closeDialog">
+      <el-button v-loading="loading" @click="closeDialog">
         {{ transformI18n("wallet.btnCancel") }}
       </el-button>
-      <el-button type="primary" @click="submitForm">
+      <el-button v-loading="loading" type="primary" @click="submitForm">
         {{ transformI18n("wallet.btnSubmit") }}
       </el-button>
     </template>

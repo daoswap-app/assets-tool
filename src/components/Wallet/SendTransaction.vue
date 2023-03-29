@@ -11,6 +11,7 @@ import {
 import { useWalletStoreHook } from "@/store/modules/wallet";
 import { type AssetItem } from "@/config/constants";
 import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
+import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
 import { getContractByABI, etherToWei } from "@/utils/web3";
 
 const props = defineProps({
@@ -49,7 +50,7 @@ const defalutFormValue = {
   sendAddress: "",
   recipientAddress: "0x9b1d0c9c1aE96011776e6786b4Efe884665918D2",
   assetToken: "",
-  amount: "0.001"
+  amount: "10"
 };
 const transactionFormRef = ref<FormInstance>();
 const transactionForm = ref<transactionFormType>(defalutFormValue);
@@ -99,13 +100,29 @@ const submitForm = async () => {
       useWalletStoreHook().getWallet,
       web3.value
     );
-    // 发送交易，BNB
+    // 根据代币处理参数，主链币
+    const params = {
+      destination: transactionForm.value.recipientAddress,
+      value: etherToWei(transactionForm.value.amount, web3.value),
+      data: "0x"
+    };
+    // ERC20代币
+    if (transactionForm.value.assetToken) {
+      const contractERC20 = getContractByABI(
+        ERC20_ABI,
+        transactionForm.value.assetToken,
+        web3.value
+      );
+      const amount = etherToWei(transactionForm.value.amount, web3.value);
+      const dataEncode = await contractERC20.methods
+        .transfer(transactionForm.value.recipientAddress, amount)
+        .encodeABI();
+      params.value = "0";
+      params.data = dataEncode;
+    }
+    // 发送交易
     contract.methods
-      .submitTransaction(
-        transactionForm.value.recipientAddress,
-        etherToWei(transactionForm.value.amount, web3.value),
-        []
-      )
+      .submitTransaction(params.destination, params.value, params.data)
       .send({
         from: currentWallet.value.address
       })

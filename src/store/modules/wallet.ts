@@ -22,6 +22,10 @@ const useWalletStore = defineStore({
     setDefaultWallet(wallet: string) {
       storageLocal().setItem(defaultWalletStorageId, wallet);
       this.wallet = wallet;
+    },
+    removeDefaultWallet() {
+      storageLocal().removeItem(defaultWalletStorageId);
+      this.wallet = null;
     }
   }
 });

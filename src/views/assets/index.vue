@@ -9,7 +9,7 @@ import { formatVisualAmount } from "@/utils/formatters";
 import SendTransaction from "@/components/Wallet/SendTransaction.vue";
 
 import { type AssetItem } from "@/config/constants";
-import ERC20_ABI from "@/assets/abi/erc20.json";
+import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
 import { getContractByABI } from "@/utils/web3";
 import { useWalletStoreHook } from "@/store/modules/wallet";
 
@@ -25,6 +25,7 @@ const tokenList = [
 // 变量
 const loading = ref<boolean>(false);
 const web3 = ref<Web3Type | null>(null);
+const currentWallet = ref<string | null>(null);
 const tableData = ref<AssetItem[]>([]);
 
 const formDialogVisible = ref(false);
@@ -32,6 +33,7 @@ const formData = ref<AssetItem>(null);
 
 // 方法
 async function getWeb3() {
+  currentWallet.value = useWalletStoreHook().getWallet;
   web3.value = useWeb3ModalStoreHook().getWeb3;
 }
 // 查询资产列表
@@ -77,7 +79,9 @@ const handleSend = (row: any) => {
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <span class="font-medium">{{ transformI18n("assets.assets") }}</span>
+          <span class="font-medium">{{
+            transformI18n("assets.assets") + "-" + currentWallet
+          }}</span>
         </div>
       </template>
       <el-table v-loading="loading" :data="tableData" style="width: 100%">

@@ -51,7 +51,6 @@ const dataLoading = ref(true);
 const defaultWallet = ref<string>(null);
 
 const getCardListData = async () => {
-  defaultWallet.value = useWalletStoreHook().getWallet;
   try {
     // 查询钱包列表
     const contractWallet = getContractByABI(
@@ -63,9 +62,22 @@ const getCardListData = async () => {
       from: props.connectedWallet.address
     });
     walletList.value = myWalletList;
-    if (!defaultWallet.value && walletList.value.length > 0) {
-      useWalletStoreHook().setDefaultWallet(walletList.value[0].token);
-      defaultWallet.value = walletList.value[0].token;
+    if (walletList.value.length > 0) {
+      if (!defaultWallet.value) {
+        useWalletStoreHook().setDefaultWallet(walletList.value[0].token);
+        defaultWallet.value = walletList.value[0].token;
+      } else {
+        const filterDefault = walletList.value.filter(
+          (wallet: WalletItem) =>
+            wallet.token.toLowerCase() === defaultWallet.value.toLowerCase()
+        );
+        if (filterDefault.length <= 0) {
+          useWalletStoreHook().setDefaultWallet(walletList.value[0].token);
+          defaultWallet.value = walletList.value[0].token;
+        }
+      }
+    } else {
+      useWalletStoreHook().removeDefaultWallet();
     }
     // 分页
     pagination.value = {

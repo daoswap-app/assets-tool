@@ -16,8 +16,8 @@ defineOptions({
 
 // 变量
 const loading = ref<boolean>(false);
-const connectedWallet = ref<string | null>(null);
-const currentWallet = ref<ConnectedWalletType>(null);
+const currentWallet = ref<string | null>(null);
+const connectedWallet = ref<ConnectedWalletType>(null);
 const web3 = ref<Web3Type | null>(null);
 const tableDataQueue = ref([]);
 const tableDataHistory = ref([]);
@@ -27,50 +27,88 @@ const getTransactionList = async () => {
   // 调用合约
   const contract = getContractByABI(
     MultiSigWallet_ABI,
-    useWalletStoreHook().getWallet,
+    currentWallet.value,
     web3.value
   );
-  // 获取交易数量，未执行交易
-  const transactionPendingCount = await contract.methods
-    .getTransactionCount(0)
+  // 获取交易记录，未执行交易
+  const transactionPendingIds = await contract.methods
+    .getTransactionIds(0)
     .call();
-  for (let i = 0; i < transactionPendingCount; i++) {
-    const transaction = await contract.methods.getTransaction(i).call();
+  transactionPendingIds.map(async (id: string) => {
+    const transaction = await contract.methods.getTransaction(id).call();
     const transactionConfirmationStatus = await contract.methods
-      .getTransactionConfirmationStatus(i, currentWallet.value.address)
+      .getTransactionConfirmationStatus(id, connectedWallet.value.address)
       .call();
     const tempItem = {
-      id: i,
-      destination: transaction.destination,
+      id: id,
+      destination: transaction.to,
       value: weiToEther(transaction.value, web3.value),
       executeState: transaction.state,
       confirmStatus: transactionConfirmationStatus
     };
     tableDataQueue.value.push(tempItem);
-  }
-  // 获取交易数量，已执行交易
-  const transactionApprovedCount = await contract.methods
-    .getTransactionCount(1)
+  });
+  // 获取交易记录，已执行交易
+  const transactionApprovedIds = await contract.methods
+    .getTransactionIds(1)
     .call();
-  for (let i = 0; i < transactionApprovedCount; i++) {
-    const transaction = await contract.methods.getTransaction(i).call();
+  transactionApprovedIds.map(async (id: string) => {
+    const transaction = await contract.methods.getTransaction(id).call();
     const transactionConfirmationStatus = await contract.methods
-      .getTransactionConfirmationStatus(i, currentWallet.value.address)
+      .getTransactionConfirmationStatus(id, connectedWallet.value.address)
       .call();
     const tempItem = {
-      id: i,
-      destination: transaction.destination,
+      id: id,
+      destination: transaction.to,
       value: weiToEther(transaction.value, web3.value),
       executeState: transaction.state,
       confirmStatus: transactionConfirmationStatus
     };
     tableDataHistory.value.push(tempItem);
-  }
+  });
+
+  // TODO: 这里要修改合约，查询交易记录
+  // const transactionPendingCount = await contract.methods
+  //   .getTransactionCount(0)
+  //   .call();
+  // for (let i = 2; i <= transactionPendingCount; i++) {
+  // const i = 1;
+  // const transaction = await contract.methods.getTransaction(i).call();
+  // const transactionConfirmationStatus = await contract.methods
+  //   .getTransactionConfirmationStatus(i, connectedWallet.value.address)
+  //   .call();
+  // const tempItem = {
+  //   id: i,
+  //   destination: transaction.destination,
+  //   value: weiToEther(transaction.value, web3.value),
+  //   executeState: transaction.state,
+  //   confirmStatus: transactionConfirmationStatus
+  // };
+  // tableDataQueue.value.push(tempItem);
+  // }
+  // 获取交易数量，已执行交易
+  // const transactionApprovedCount = await contract.methods
+  //   .getTransactionCount(1)
+  //   .call();
+  // for (let i = 0; i < transactionApprovedCount; i++) {
+  //   const transaction = await contract.methods.getTransaction(i).call();
+  //   const transactionConfirmationStatus = await contract.methods
+  //     .getTransactionConfirmationStatus(i, connectedWallet.value.address)
+  //     .call();
+  //   const tempItem = {
+  //     id: i,
+  //     destination: transaction.destination,
+  //     value: weiToEther(transaction.value, web3.value),
+  //     executeState: transaction.state,
+  //     confirmStatus: transactionConfirmationStatus
+  //   };
+  //   tableDataHistory.value.push(tempItem);
+  // }
 };
 
 onMounted(() => {
-  connectedWallet.value = useWalletStoreHook().getWallet;
-  currentWallet.value = useWeb3ModalStoreHook().getWallet;
+  currentWallet.value = useWalletStoreHook().getWallet;
+  connectedWallet.value = useWeb3ModalStoreHook().getWallet;
   web3.value = useWeb3ModalStoreHook().getWeb3;
   getTransactionList();
 });
@@ -86,14 +124,14 @@ const handleConfirm = (value: any) => {
   // 调用合约
   const contract = getContractByABI(
     MultiSigWallet_ABI,
-    useWalletStoreHook().getWallet,
+    currentWallet.value,
     web3.value
   );
   // 发送交易，BNB
   contract.methods
     .confirmTransaction(value.id)
     .send({
-      from: currentWallet.value.address
+      from: connectedWallet.value.address
     })
     .then((res: any) => {
       console.info(res);
@@ -111,14 +149,14 @@ const handleExecute = (value: any) => {
   // 调用合约
   const contract = getContractByABI(
     MultiSigWallet_ABI,
-    useWalletStoreHook().getWallet,
+    currentWallet.value,
     web3.value
   );
   // 发送交易，BNB
   contract.methods
     .executeTransaction(value.id)
     .send({
-      from: currentWallet.value.address
+      from: connectedWallet.value.address
     })
     .then((res: any) => {
       console.info(res);
@@ -138,7 +176,7 @@ const handleExecute = (value: any) => {
       <template #header>
         <div class="card-header">
           <span class="font-medium">{{
-            transformI18n("transaction.transactions")
+            transformI18n("transaction.transactions") + "-" + currentWallet
           }}</span>
         </div>
       </template>
