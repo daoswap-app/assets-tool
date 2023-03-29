@@ -117,6 +117,8 @@ const submitForm = async () => {
       const dataEncode = await contractERC20.methods
         .transfer(transactionForm.value.recipientAddress, amount)
         .encodeABI();
+      // 重写参数
+      params.destination = transactionForm.value.assetToken;
       params.value = "0";
       params.data = dataEncode;
     }

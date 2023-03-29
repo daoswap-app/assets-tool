@@ -365,7 +365,7 @@
   {
     "inputs": [
       {
-        "internalType": "address payable",
+        "internalType": "address",
         "name": "to",
         "type": "address"
       },
@@ -414,7 +414,7 @@
     ],
     "name": "executeTransaction",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
