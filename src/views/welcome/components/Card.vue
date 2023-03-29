@@ -1,83 +1,69 @@
 <script setup lang="ts">
-import { computed, PropType } from "vue";
+import { PropType } from "vue";
 import { transformI18n } from "@/plugins/i18n";
-import shopIcon from "@/assets/svg/shop.svg?component";
-import laptopIcon from "@/assets/svg/laptop.svg?component";
-import serviceIcon from "@/assets/svg/service.svg?component";
-import calendarIcon from "@/assets/svg/calendar.svg?component";
-import userAvatarIcon from "@/assets/svg/user_avatar.svg?component";
+import WalletFilled from "@/assets/svg/wallet-filled.svg?component";
 import More2Fill from "@iconify-icons/ri/more-2-fill";
+import { type WalletItem } from "@/config/constants";
+import { trunc } from "@/utils/string";
 
 defineOptions({
   name: "ReCard"
 });
 
-interface CardProductType {
-  type: number;
-  isSetup: boolean;
-  description: string;
-  name: string;
-}
-
 const props = defineProps({
-  product: {
-    type: Object as PropType<CardProductType>
+  wallet: {
+    type: Object as PropType<WalletItem>
+  },
+  defaultWallet: {
+    type: String,
+    default: null
   }
 });
 
-const emit = defineEmits(["manage-product", "delete-item"]);
+const isCurrentWallet =
+  props.wallet.token.toLowerCase() === props.defaultWallet.toLowerCase();
 
-const handleClickManage = (product: CardProductType) => {
-  emit("manage-product", product);
+const emit = defineEmits(["manage-wallet", "change-wallet"]);
+const handleClickManage = (wallet: WalletItem) => {
+  emit("manage-wallet", wallet);
+};
+const handleChangeWallet = (wallet: WalletItem) => {
+  emit("change-wallet", wallet);
 };
 
-const handleClickDelete = (product: CardProductType) => {
-  emit("delete-item", product);
-};
-
-const cardClass = computed(() => [
-  "list-card-item",
-  { "list-card-item__disabled": !props.product.isSetup }
-]);
-
-const cardLogoClass = computed(() => [
-  "list-card-item_detail--logo",
-  { "list-card-item_detail--logo__disabled": !props.product.isSetup }
-]);
+// const handleClickDelete = (wallet: WalletItem) => {
+//   emit("delete-item", wallet);
+// };
 </script>
 
 <template>
-  <div :class="cardClass">
+  <div class="list-card-item">
     <div class="list-card-item_detail bg-bg_color">
       <el-row justify="space-between">
         <!-- 图标 -->
-        <div :class="cardLogoClass">
-          <shopIcon v-if="product.type === 1" />
-          <calendarIcon v-if="product.type === 2" />
-          <serviceIcon v-if="product.type === 3" />
-          <userAvatarIcon v-if="product.type === 4" />
-          <laptopIcon v-if="product.type === 5" />
+        <div class="list-card-item_detail--logo">
+          <WalletFilled />
         </div>
         <div class="list-card-item_detail--operation">
           <!-- 状态 -->
           <el-tag
-            :color="product.isSetup ? '#00a870' : '#eee'"
+            color="#00a870"
             effect="dark"
             class="mx-1 list-card-item_detail--operation--tag"
           >
-            {{ product.isSetup ? "2/3" : "1/1" }}
+            {{ wallet.threshold }} / {{ wallet.ownerCount }}
           </el-tag>
           <!-- 操作 -->
-          <el-dropdown trigger="click" :disabled="!product.isSetup">
+          <el-dropdown trigger="click">
             <IconifyIconOffline :icon="More2Fill" class="text-[24px]" />
             <template #dropdown>
-              <el-dropdown-menu :disabled="!product.isSetup">
-                <el-dropdown-item @click="handleClickManage(product)">
-                  {{ transformI18n("wallet.btnRename") }}
+              <el-dropdown-menu>
+                <el-dropdown-item @click="handleClickManage(wallet)">
+                  {{ transformI18n("wallet.btnModify") }}
                 </el-dropdown-item>
-                <el-dropdown-item @click="handleClickDelete(product)">
+                <!-- <el-dropdown-item @click="handleClickDelete(wallet)">
                   {{ transformI18n("wallet.btnDelete") }}
-                </el-dropdown-item>
+                </el-dropdown-item> -->
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -85,11 +71,39 @@ const cardLogoClass = computed(() => [
       </el-row>
       <!-- 内容 -->
       <p class="list-card-item_detail--name text-text_color_primary">
-        {{ product.name }}
+        {{ transformI18n("wallet.address") }}:
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="wallet.token"
+          placement="top-start"
+        >
+          <span style="font-weight: bold">{{ trunc(wallet.token) }}</span>
+        </el-tooltip>
       </p>
-      <p class="list-card-item_detail--desc text-text_color_regular">
-        {{ product.description }}
+      <p class="list-card-item_detail--name text-text_color_primary">
+        {{ transformI18n("wallet.name") }}:
+        <span style="font-weight: bold">{{ wallet.name }}</span>
       </p>
+      <p class="list-card-item_detail--name text-text_color_primary">
+        {{ transformI18n("wallet.ownerCount") }}:
+        <span style="font-weight: bold">{{ wallet.ownerCount }}</span>
+      </p>
+      <!-- 操作 -->
+      <el-divider />
+      <el-button
+        class="w-full"
+        size="default"
+        type="primary"
+        :disabled="isCurrentWallet"
+        @click="handleChangeWallet(wallet)"
+      >
+        {{
+          isCurrentWallet
+            ? transformI18n("wallet.btnSelectedWallet")
+            : transformI18n("wallet.btnChangeWallet")
+        }}
+      </el-button>
     </div>
   </div>
 </template>
@@ -101,7 +115,6 @@ const cardLogoClass = computed(() => [
   margin-bottom: 12px;
   border-radius: 3px;
   overflow: hidden;
-  cursor: pointer;
 
   &_detail {
     flex: 1;

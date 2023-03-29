@@ -1,23 +1,22 @@
 <script setup lang="ts">
+import { ref, onMounted, nextTick } from "vue";
 import { transformI18n } from "@/plugins/i18n";
 import Card from "./components/Card.vue";
-import { message } from "@/utils/message";
-import { ElMessageBox } from "element-plus";
-import { ref, onMounted, nextTick } from "vue";
+// import { message } from "@/utils/message";
+// import { ElMessageBox } from "element-plus";
 // import dialogForm from "./components/DialogForm.vue";
 import AddWallet from "@/components/Wallet/AddWallet.vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import Search from "@iconify-icons/ep/search";
 import AddFill from "@iconify-icons/ri/add-circle-line";
-
-// import { ethers } from "ethers";
 import {
   type ConnectedWalletType,
   type Web3Type
 } from "@/store/modules/web3Modal";
 import Wallet_ABI from "@/assets/abi/Wallet_abi.json";
-import { WALLET_CONTRACT_ADDRESSES } from "@/config/constants";
+import { WALLET_CONTRACT_ADDRESSES, type WalletItem } from "@/config/constants";
 import { getContractByABI } from "@/utils/web3";
+import { useWalletStoreHook } from "@/store/modules/wallet";
 
 defineOptions({
   name: "HomeWallet"
@@ -45,28 +44,14 @@ const svg = `
         " style="stroke-width: 4px; fill: rgba(0, 0, 0, 0)"/>
       `;
 
-const INITIAL_DATA = {
-  name: "",
-  status: "",
-  description: "",
-  type: "",
-  mark: ""
-};
-
-type WalletItem = {
-  name: string;
-  token: string;
-  ownerCount: number;
-  threshold: number;
-  owners: string[];
-};
-
 const pagination = ref({ current: 1, pageSize: 12, total: 0 });
 
 const walletList = ref<WalletItem[]>([]);
 const dataLoading = ref(true);
+const defaultWallet = ref<string>(null);
 
 const getCardListData = async () => {
+  defaultWallet.value = useWalletStoreHook().getWallet;
   try {
     // 查询钱包列表
     const contractWallet = getContractByABI(
@@ -77,8 +62,11 @@ const getCardListData = async () => {
     const myWalletList = await contractWallet.methods.getWalletList().call({
       from: props.connectedWallet.address
     });
-    console.info(myWalletList);
     walletList.value = myWalletList;
+    if (!defaultWallet.value && walletList.value.length > 0) {
+      useWalletStoreHook().setDefaultWallet(walletList.value[0].token);
+      defaultWallet.value = walletList.value[0].token;
+    }
     // 分页
     pagination.value = {
       ...pagination.value,
@@ -98,7 +86,7 @@ onMounted(() => {
 });
 
 const formDialogVisible = ref(false);
-const formData = ref({ ...INITIAL_DATA });
+const formData = ref<WalletItem>(null);
 const searchValue = ref("");
 
 const onPageSizeChange = (size: number) => {
@@ -108,25 +96,31 @@ const onPageSizeChange = (size: number) => {
 const onCurrentChange = (current: number) => {
   pagination.value.current = current;
 };
-const handleDeleteItem = product => {
-  ElMessageBox.confirm(
-    product
-      ? `确认删除后${product.name}的所有产品信息将被清空, 且无法恢复`
-      : "",
-    "提示",
-    {
-      type: "warning"
-    }
-  )
-    .then(() => {
-      message("删除成功", { type: "success" });
-    })
-    .catch(() => {});
-};
-const handleManageProduct = product => {
+// const handleDeleteItem = wallet => {
+//   ElMessageBox.confirm(
+//     wallet ? `确认删除后${wallet.name}的所有产品信息将被清空, 且无法恢复` : "",
+//     "提示",
+//     {
+//       type: "warning"
+//     }
+//   )
+//     .then(() => {
+//       message("删除成功", { type: "success" });
+//     })
+//     .catch(() => {});
+// };
+const handleManageWallet = (wallet?: WalletItem) => {
   formDialogVisible.value = true;
   nextTick(() => {
-    formData.value = { ...product, status: product?.isSetup ? "1" : "0" };
+    formData.value = wallet ?? null;
+  });
+};
+const handleChangeWallet = (wallet: WalletItem) => {
+  nextTick(() => {
+    dataLoading.value = true;
+    useWalletStoreHook().setDefaultWallet(wallet.token);
+    pagination.value.total = 0;
+    getCardListData();
   });
 };
 </script>
@@ -135,10 +129,7 @@ const handleManageProduct = product => {
   <div class="main">
     <div class="w-full flex justify-between mb-4">
       <!-- 添加 -->
-      <el-button
-        :icon="useRenderIcon(AddFill)"
-        @click="formDialogVisible = true"
-      >
+      <el-button :icon="useRenderIcon(AddFill)" @click="handleManageWallet()">
         {{ transformI18n("wallet.btnAdd") }}
       </el-button>
       <!-- 搜索 -->
@@ -179,7 +170,7 @@ const handleManageProduct = product => {
       <template v-if="pagination.total > 0">
         <el-row :gutter="16">
           <el-col
-            v-for="(product, index) in walletList
+            v-for="(wallet, index) in walletList
               .slice(
                 pagination.pageSize * (pagination.current - 1),
                 pagination.pageSize * pagination.current
@@ -195,9 +186,10 @@ const handleManageProduct = product => {
             :xl="4"
           >
             <Card
-              :product="product"
-              @delete-item="handleDeleteItem"
-              @manage-product="handleManageProduct"
+              :wallet="wallet"
+              :default-wallet="defaultWallet"
+              @manage-wallet="handleManageWallet"
+              @change-wallet="handleChangeWallet"
             />
           </el-col>
         </el-row>

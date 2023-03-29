@@ -24,7 +24,7 @@ type OnboardType = {
   connectedWallet: ConnectedWalletType | null;
 };
 
-const lastWalletStorageId = "lastWallet";
+const lastWalletStorageId = "lastWalletLabel";
 
 const useOnboardStore = defineStore({
   id: "pure-onboard",

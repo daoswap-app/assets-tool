@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from "vue";
+import { ref, watch, onMounted, PropType } from "vue";
 import { FormInstance } from "element-plus";
 import { transformI18n } from "@/plugins/i18n";
 import { isChecksummedAddress, checksumAddress } from "@/utils/addresses";
@@ -9,8 +9,10 @@ import {
   type ConnectedWalletType
 } from "@/store/modules/web3Modal";
 import Wallet_ABI from "@/assets/abi/Wallet_abi.json";
-import { WALLET_CONTRACT_ADDRESSES } from "@/config/constants";
+import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
+import { WALLET_CONTRACT_ADDRESSES, type WalletItem } from "@/config/constants";
 import { getContractByABI } from "@/utils/web3";
+import { useWalletStoreHook } from "@/store/modules/wallet";
 
 const props = defineProps({
   visible: {
@@ -18,9 +20,9 @@ const props = defineProps({
     default: false
   },
   data: {
-    type: Object,
+    type: Object as PropType<WalletItem | null>,
     default: () => {
-      return {};
+      return null;
     }
   }
 });
@@ -29,9 +31,9 @@ const loading = ref<boolean>(false);
 const formVisible = ref(false);
 const currentWallet = ref<ConnectedWalletType>(null);
 const web3 = ref<Web3Type>(null);
+const isCreateWallet = ref<Boolean>(true);
 // 表单数据
 type ownersType = {
-  name: string;
   address: string;
   error: string;
 };
@@ -41,20 +43,14 @@ type walletFormType = {
   confirmNumber: number;
 };
 // 表单数据
-const defalutFormValue = {
-  name: "1rens",
-  owners: [],
-  confirmNumber: 1
-};
+const defalutFormValue = { name: "1rens", owners: [], confirmNumber: 1 };
 const walletFormRef = ref<FormInstance>();
-const walletForm = reactive<walletFormType>(defalutFormValue);
+const walletForm = ref<walletFormType>(defalutFormValue);
 onMounted(() => {
   loading.value = true;
   currentWallet.value = useWeb3ModalStoreHook().getWallet;
   web3.value = useWeb3ModalStoreHook().getWeb3;
-  // 添加当前账号
-  walletForm.owners.push({
-    name: "self",
+  walletForm.value.owners.push({
     address: currentWallet.value.address,
     error: ""
   });
@@ -73,8 +69,8 @@ const checkForm = async () => {
   });
   // 校验所有者
   let errorNumber = 0;
-  walletForm.owners.map((item: ownersType) => {
-    if (!item.name || !item.address) {
+  walletForm.value.owners.map((item: ownersType) => {
+    if (!item.address) {
       errorNumber++;
       item.error = transformI18n("wallet.please add owners");
       return;
@@ -89,7 +85,7 @@ const checkForm = async () => {
         }
       }
       // 判断地址是否存在
-      const exsitList = walletForm.owners.filter(
+      const exsitList = walletForm.value.owners.filter(
         (owner: ownersType) => owner.address === item.address
       );
       if (exsitList.length > 1) {
@@ -114,36 +110,70 @@ const submitForm = async () => {
   if (checkRet) {
     loading.value = true;
     const owners = [];
-    walletForm.owners.map((item: ownersType) => {
+    walletForm.value.owners.map((item: ownersType) => {
       owners.push(item.address);
     });
-    // 调用合约
-    const contract = getContractByABI(
-      Wallet_ABI,
-      WALLET_CONTRACT_ADDRESSES[currentWallet.value.chainId],
-      web3.value
-    );
-    contract.methods
-      .createWallet(walletForm.name, owners, walletForm.confirmNumber)
-      .send({
-        from: currentWallet.value.address
-      })
-      .then((res: any) => {
-        console.info(res);
-      })
-      .catch((e: any) => {
-        console.error(e);
-      })
-      .finally(() => {
-        loading.value = false;
-        closeDialog();
-      });
+    // 判断是修改还是创建
+    if (isCreateWallet.value) {
+      // 调用合约
+      const contract = getContractByABI(
+        Wallet_ABI,
+        WALLET_CONTRACT_ADDRESSES[currentWallet.value.chainId],
+        web3.value
+      );
+      contract.methods
+        .createWallet(
+          walletForm.value.name,
+          owners,
+          walletForm.value.confirmNumber
+        )
+        .send({
+          from: currentWallet.value.address
+        })
+        .then((res: any) => {
+          console.info(res);
+        })
+        .catch((e: any) => {
+          console.error(e);
+        })
+        .finally(() => {
+          loading.value = false;
+          closeDialog();
+        });
+    } else {
+      const contractAddress = useWalletStoreHook().getWallet;
+      // 调用合约
+      const contract = getContractByABI(
+        MultiSigWallet_ABI,
+        contractAddress,
+        web3.value
+      );
+      contract.methods
+        .createWallet(
+          walletForm.value.name,
+          owners,
+          walletForm.value.confirmNumber
+        )
+        .send({
+          from: currentWallet.value.address
+        })
+        .then((res: any) => {
+          console.info(res);
+        })
+        .catch((e: any) => {
+          console.error(e);
+        })
+        .finally(() => {
+          loading.value = false;
+          closeDialog();
+        });
+    }
   }
 };
 const removeOwner = (item: any) => {
-  const index = walletForm.owners.indexOf(item);
+  const index = walletForm.value.owners.indexOf(item);
   if (index !== -1) {
-    walletForm.owners.splice(index, 1);
+    walletForm.value.owners.splice(index, 1);
   }
 };
 const addOwner = () => {
@@ -152,7 +182,7 @@ const addOwner = () => {
     address: "",
     error: ""
   };
-  walletForm.owners.push(newItem);
+  walletForm.value.owners.push(newItem);
 };
 // 弹窗显示/隐藏
 const closeDialog = () => {
@@ -172,10 +202,32 @@ watch(
   }
 );
 watch(
-  () => walletForm.owners.length,
+  () => props.data,
   val => {
-    if (walletForm.confirmNumber > walletForm.owners.length) {
-      walletForm.confirmNumber = val;
+    loading.value = true;
+    if (val) {
+      isCreateWallet.value = false;
+      walletForm.value.name = val.name;
+      walletForm.value.confirmNumber = val.threshold;
+      walletForm.value.owners = [];
+      val.owners.map((owner: string) => {
+        walletForm.value.owners.push({
+          address: owner,
+          error: ""
+        });
+      });
+    } else {
+      isCreateWallet.value = true;
+      walletForm.value = defalutFormValue;
+    }
+    loading.value = false;
+  }
+);
+watch(
+  () => walletForm.value.owners.length,
+  val => {
+    if (walletForm.value.confirmNumber > walletForm.value.owners.length) {
+      walletForm.value.confirmNumber = val;
     }
   }
 );
@@ -184,7 +236,11 @@ watch(
 <template>
   <el-dialog
     v-model="formVisible"
-    :title="transformI18n('wallet.createWallet')"
+    :title="
+      transformI18n(
+        isCreateWallet ? 'wallet.createWallet' : 'wallet.modifyWallet'
+      )
+    "
     width="90%"
     draggable
     :close-on-click-modal="false"
@@ -227,10 +283,10 @@ watch(
         >
           <el-row :gutter="10" style="width: 100%">
             <el-col :xs="4" :md="1">{{ index + 1 }}</el-col>
-            <el-col :xs="20" :md="4">
+            <!-- <el-col :xs="20" :md="4">
               <el-input v-model="owner.name" @blur="checkForm()" />
-            </el-col>
-            <el-col :xs="18" :md="15">
+            </el-col> -->
+            <el-col :xs="14" :md="19">
               <el-input v-model="owner.address" @blur="checkForm()" />
             </el-col>
             <el-col :xs="6" :md="4">

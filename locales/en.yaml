@@ -68,6 +68,12 @@ transaction:
   recipientAddress: Recipient address
   assetToken: Asset Token
   amount: Amount
+  destination: Destination
+  value: Value
+  # 按钮
+  btnConfirm: Confirm
+  btnRevoke: Revoke
+  btnExecute: Execute
   # 提示
   please input recipient address: Please input recipient address
   please select asset token: Please select asset token
@@ -79,12 +85,14 @@ wallet:
   name: Name
   address: Wallet Address
   owners: Owner(s)
+  ownerCount: Owner(s) Count
   finished: Finished
   confirmNumber: Confirm Number
   # 按钮
   btnAdd: Add
   btnSend: Send
   btnRename: Rename
+  btnModify: Modify
   btnDelete: Delete
   btnCancel: Cancel
   btnConfirm: Confirm
@@ -93,6 +101,8 @@ wallet:
   btnNext: Next
   btnPrev: Prev
   btnAddOwner: Add Owner
+  btnSelectedWallet: Selected Wallet
+  btnChangeWallet: Change Wallet
   # 提示
   please input wallet name: Please input wallet name
   please input wallet address: Please input wallet address
@@ -101,3 +111,4 @@ wallet:
   invalid wallet address: Invalid wallet address
   please select confirm number: Please select confirm number
   createWallet: Create Wallet
+  modifyWallet: Modify Wallet

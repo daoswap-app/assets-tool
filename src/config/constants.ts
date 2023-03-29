@@ -17,3 +17,8 @@ export type WalletItem = {
   threshold: number;
   owners: string[];
 };
+export type AssetItem = {
+  symbol: string;
+  token: string;
+  balance: string;
+};

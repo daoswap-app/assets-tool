@@ -67,6 +67,12 @@ transaction:
   recipientAddress: 接收地址
   assetToken: 资产Token
   amount: 交易金额
+  destination: 接收地址
+  value: 数量
+  # 按钮
+  btnConfirm: 确认
+  btnRevoke: 驳回
+  btnExecute: 执行
   # 提示
   please input recipient address: 请输入接收地址
   please select asset token: 请选择资产Token
@@ -78,12 +84,14 @@ wallet:
   name: 名称
   address: 钱包地址
   owners: 拥有者
+  ownerCount: 拥有者数量
   finished: 完成
   confirmNumber: 确认数量
   # 按钮
   btnAdd: 添加
   btnSend: 发送
   btnRename: 重命名
+  btnModify: 修改
   btnDelete: 删除
   btnCancel: 取消
   btnConfirm: 确认
@@ -92,6 +100,8 @@ wallet:
   btnNext: 下一步
   btnPrev: 上一步
   btnAddOwner: 添加所有者
+  btnSelectedWallet: 当前选中
+  btnChangeWallet: 切换钱包
   # 提示
   please input wallet name: 请输入钱包名称
   please input wallet address: 请输入钱包地址
@@ -100,3 +110,4 @@ wallet:
   invalid wallet address: 无效的钱包地址
   please select confirm number: 请选择确认数量
   createWallet: 创建钱包
+  modifyWallet: 修改钱包

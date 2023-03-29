@@ -35,3 +35,19 @@ export function getContractByABI(contractABI, token, web3) {
     return new web3.eth.Contract(contractABI, toChecksumAddress(token));
   }
 }
+
+/**
+ * 格式化Wei To Ether
+ * @returns etherValue
+ */
+export function weiToEther(amount, web3) {
+  return web3.utils.fromWei(amount, "ether");
+}
+
+/**
+ * 格式化Ether To Wei
+ * @returns weiValue
+ */
+export function etherToWei(amount, web3) {
+  return web3.utils.toWei(amount.toString(), "ether");
+}
