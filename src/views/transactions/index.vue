@@ -10,8 +10,6 @@ import {
 import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
 import { getContractByABI, weiToEther } from "@/utils/web3";
 
-import { tableDataHistory } from "./data";
-
 defineOptions({
   name: "Transactions"
 });
@@ -22,6 +20,7 @@ const connectedWallet = ref<string | null>(null);
 const currentWallet = ref<ConnectedWalletType>(null);
 const web3 = ref<Web3Type | null>(null);
 const tableDataQueue = ref([]);
+const tableDataHistory = ref([]);
 // 方法
 const getTransactionList = async () => {
   loading.value = true;
@@ -32,8 +31,10 @@ const getTransactionList = async () => {
     web3.value
   );
   // 获取交易数量，未执行交易
-  const transactionCount = await contract.methods.getTransactionCount(0).call();
-  for (let i = 0; i < transactionCount; i++) {
+  const transactionPendingCount = await contract.methods
+    .getTransactionCount(0)
+    .call();
+  for (let i = 0; i < transactionPendingCount; i++) {
     const transaction = await contract.methods.getTransaction(i).call();
     const transactionConfirmationStatus = await contract.methods
       .getTransactionConfirmationStatus(i, currentWallet.value.address)
@@ -46,6 +47,24 @@ const getTransactionList = async () => {
       confirmStatus: transactionConfirmationStatus
     };
     tableDataQueue.value.push(tempItem);
+  }
+  // 获取交易数量，已执行交易
+  const transactionApprovedCount = await contract.methods
+    .getTransactionCount(1)
+    .call();
+  for (let i = 0; i < transactionApprovedCount; i++) {
+    const transaction = await contract.methods.getTransaction(i).call();
+    const transactionConfirmationStatus = await contract.methods
+      .getTransactionConfirmationStatus(i, currentWallet.value.address)
+      .call();
+    const tempItem = {
+      id: i,
+      destination: transaction.destination,
+      value: weiToEther(transaction.value, web3.value),
+      executeState: transaction.state,
+      confirmStatus: transactionConfirmationStatus
+    };
+    tableDataHistory.value.push(tempItem);
   }
 };
 
@@ -169,18 +188,20 @@ const handleExecute = (value: any) => {
         </el-tab-pane>
         <el-tab-pane :label="transformI18n('transaction.history')" name="1">
           <el-table :data="tableDataHistory" style="width: 100%">
-            <el-table-column :label="transformI18n('assets.asset')">
+            <el-table-column :label="transformI18n('transaction.destination')">
               <template v-slot="scope">
                 <div style="display: flex; align-items: left">
                   <i class="el-icon-time" />
-                  <span style="margin-left: 10px">{{ scope.row.name }}</span>
+                  <span style="margin-left: 10px">{{
+                    scope.row.destination
+                  }}</span>
                 </div>
               </template>
             </el-table-column>
-            <el-table-column :label="transformI18n('assets.balance')">
+            <el-table-column :label="transformI18n('transaction.value')">
               <template v-slot="scope">
                 <div style="display: flex; align-items: left">
-                  <span>{{ scope.row.balance }}</span>
+                  <span>{{ scope.row.value }}</span>
                   <span style="margin-left: 3px">{{ scope.row.symbol }}</span>
                 </div>
               </template>
