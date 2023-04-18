@@ -98,6 +98,12 @@
         "internalType": "uint256",
         "name": "transactionId",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "createTime",
+        "type": "uint256"
       }
     ],
     "name": "TransactionConfirmed",
@@ -106,6 +112,12 @@
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
       {
         "indexed": true,
         "internalType": "address",
@@ -129,6 +141,12 @@
         "internalType": "uint256",
         "name": "transactionId",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "createTime",
+        "type": "uint256"
       }
     ],
     "name": "TransactionCreated",
@@ -139,8 +157,20 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
         "internalType": "uint256",
         "name": "transactionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "createTime",
         "type": "uint256"
       }
     ],
@@ -161,9 +191,52 @@
         "internalType": "uint256",
         "name": "transactionId",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "createTime",
+        "type": "uint256"
       }
     ],
     "name": "TransactionRevoke",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "address[]",
+        "name": "owners",
+        "type": "address[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "threshold",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "createTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "WalletCreated",
     "type": "event"
   },
   {

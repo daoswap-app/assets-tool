@@ -3,7 +3,6 @@ import Web3Modal from "web3modal";
 import { provider } from "web3-core";
 import { defineStore } from "pinia";
 import { store } from "@/store";
-// import { initWeb3Modal } from "@/api/web3Modal";
 import { useUserStoreHook } from "@/store/modules/user";
 
 export type Web3Type = Web3;
@@ -117,9 +116,9 @@ const useWeb3ModalStore = defineStore({
       return this.connectedWallet;
     },
     /** 断开连接 */
-    disconnectWallet() {
-      if (this.web3) {
-        this.web3.disconnectWallet();
+    async disconnectWallet() {
+      if (this.web3 && this.web3.currentProvider) {
+        await this.web3.setProvider(null);
       }
     }
   }

@@ -10,6 +10,9 @@ import {
 import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
 import { getContractByABI, weiToEther } from "@/utils/web3";
 
+import Queue from "./components/Queue.vue";
+import History from "./components/History.vue";
+
 defineOptions({
   name: "Transactions"
 });
@@ -34,7 +37,7 @@ const getTransactionList = async () => {
   const transactionPendingIds = await contract.methods
     .getTransactionIds(0)
     .call();
-  transactionPendingIds.map(async (id: string) => {
+  const getResultForPending = transactionPendingIds.map(async (id: string) => {
     const transaction = await contract.methods.getTransaction(id).call();
     const transactionConfirmationStatus = await contract.methods
       .getTransactionConfirmationStatus(id, connectedWallet.value.address)
@@ -48,62 +51,29 @@ const getTransactionList = async () => {
     };
     tableDataQueue.value.push(tempItem);
   });
+  await Promise.all(getResultForPending);
   // 获取交易记录，已执行交易
   const transactionApprovedIds = await contract.methods
     .getTransactionIds(1)
     .call();
-  transactionApprovedIds.map(async (id: string) => {
-    const transaction = await contract.methods.getTransaction(id).call();
-    const transactionConfirmationStatus = await contract.methods
-      .getTransactionConfirmationStatus(id, connectedWallet.value.address)
-      .call();
-    const tempItem = {
-      id: id,
-      destination: transaction.to,
-      value: weiToEther(transaction.value, web3.value),
-      executeState: transaction.state,
-      confirmStatus: transactionConfirmationStatus
-    };
-    tableDataHistory.value.push(tempItem);
-  });
-
-  // TODO: 这里要修改合约，查询交易记录
-  // const transactionPendingCount = await contract.methods
-  //   .getTransactionCount(0)
-  //   .call();
-  // for (let i = 2; i <= transactionPendingCount; i++) {
-  // const i = 1;
-  // const transaction = await contract.methods.getTransaction(i).call();
-  // const transactionConfirmationStatus = await contract.methods
-  //   .getTransactionConfirmationStatus(i, connectedWallet.value.address)
-  //   .call();
-  // const tempItem = {
-  //   id: i,
-  //   destination: transaction.destination,
-  //   value: weiToEther(transaction.value, web3.value),
-  //   executeState: transaction.state,
-  //   confirmStatus: transactionConfirmationStatus
-  // };
-  // tableDataQueue.value.push(tempItem);
-  // }
-  // 获取交易数量，已执行交易
-  // const transactionApprovedCount = await contract.methods
-  //   .getTransactionCount(1)
-  //   .call();
-  // for (let i = 0; i < transactionApprovedCount; i++) {
-  //   const transaction = await contract.methods.getTransaction(i).call();
-  //   const transactionConfirmationStatus = await contract.methods
-  //     .getTransactionConfirmationStatus(i, connectedWallet.value.address)
-  //     .call();
-  //   const tempItem = {
-  //     id: i,
-  //     destination: transaction.destination,
-  //     value: weiToEther(transaction.value, web3.value),
-  //     executeState: transaction.state,
-  //     confirmStatus: transactionConfirmationStatus
-  //   };
-  //   tableDataHistory.value.push(tempItem);
-  // }
+  const getResultForApproved = transactionApprovedIds.map(
+    async (id: string) => {
+      const transaction = await contract.methods.getTransaction(id).call();
+      const transactionConfirmationStatus = await contract.methods
+        .getTransactionConfirmationStatus(id, connectedWallet.value.address)
+        .call();
+      const tempItem = {
+        id: id,
+        destination: transaction.to,
+        value: weiToEther(transaction.value, web3.value),
+        executeState: transaction.state,
+        confirmStatus: transactionConfirmationStatus
+      };
+      tableDataHistory.value.push(tempItem);
+    }
+  );
+  await Promise.all(getResultForApproved);
+  loading.value = false;
 };
 
 onMounted(() => {
@@ -118,56 +88,6 @@ const selected = ref("0");
 function tabClick({ index }) {
   selected.value = index;
 }
-//确认交易
-const handleConfirm = (value: any) => {
-  loading.value = true;
-  // 调用合约
-  const contract = getContractByABI(
-    MultiSigWallet_ABI,
-    currentWallet.value,
-    web3.value
-  );
-  // 发送交易，BNB
-  contract.methods
-    .confirmTransaction(value.id)
-    .send({
-      from: connectedWallet.value.address
-    })
-    .then((res: any) => {
-      console.info(res);
-    })
-    .catch((e: any) => {
-      console.error(e);
-    })
-    .finally(() => {
-      loading.value = false;
-    });
-};
-//选择交易
-const handleExecute = (value: any) => {
-  loading.value = true;
-  // 调用合约
-  const contract = getContractByABI(
-    MultiSigWallet_ABI,
-    currentWallet.value,
-    web3.value
-  );
-  // 发送交易，BNB
-  contract.methods
-    .executeTransaction(value.id)
-    .send({
-      from: connectedWallet.value.address
-    })
-    .then((res: any) => {
-      console.info(res);
-    })
-    .catch((e: any) => {
-      console.error(e);
-    })
-    .finally(() => {
-      loading.value = false;
-    });
-};
 </script>
 
 <template>
@@ -176,75 +96,27 @@ const handleExecute = (value: any) => {
       <template #header>
         <div class="card-header">
           <span class="font-medium">{{
-            transformI18n("transaction.transactions") + "-" + currentWallet
+            transformI18n("transaction.transactions") + " - " + currentWallet
           }}</span>
         </div>
       </template>
 
       <el-tabs v-model="selected" @tab-click="tabClick">
         <el-tab-pane :label="transformI18n('transaction.queue')" name="0">
-          <el-table :data="tableDataQueue" style="width: 100%">
-            <el-table-column :label="transformI18n('transaction.destination')">
-              <template v-slot="scope">
-                <div style="display: flex; align-items: left">
-                  <i class="el-icon-time" />
-                  <span style="margin-left: 10px">{{
-                    scope.row.destination
-                  }}</span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column :label="transformI18n('transaction.value')">
-              <template v-slot="scope">
-                <div style="display: flex; align-items: left">
-                  <span>{{ scope.row.value }}</span>
-                  <span style="margin-left: 3px">{{ scope.row.symbol }}</span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column :label="transformI18n('assets.operation')">
-              <template v-slot="scope">
-                <el-button
-                  v-if="!scope.row.confirmStatus"
-                  type="primary"
-                  size="small"
-                  @click="handleConfirm(scope.row)"
-                >
-                  {{ transformI18n("transaction.btnConfirm") }}
-                </el-button>
-                <!-- v-if="scope.row.executeState === 0" -->
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="handleExecute(scope.row)"
-                >
-                  {{ transformI18n("transaction.btnExecute") }}
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+          <Queue
+            v-if="connectedWallet && web3 && currentWallet"
+            :connectedWallet="connectedWallet"
+            :web3="web3"
+            :currentWallet="currentWallet"
+          />
         </el-tab-pane>
         <el-tab-pane :label="transformI18n('transaction.history')" name="1">
-          <el-table :data="tableDataHistory" style="width: 100%">
-            <el-table-column :label="transformI18n('transaction.destination')">
-              <template v-slot="scope">
-                <div style="display: flex; align-items: left">
-                  <i class="el-icon-time" />
-                  <span style="margin-left: 10px">{{
-                    scope.row.destination
-                  }}</span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column :label="transformI18n('transaction.value')">
-              <template v-slot="scope">
-                <div style="display: flex; align-items: left">
-                  <span>{{ scope.row.value }}</span>
-                  <span style="margin-left: 3px">{{ scope.row.symbol }}</span>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
+          <History
+            v-if="connectedWallet && web3 && currentWallet"
+            :connectedWallet="connectedWallet"
+            :web3="web3"
+            :currentWallet="currentWallet"
+          />
         </el-tab-pane>
       </el-tabs>
     </el-card>

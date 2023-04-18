@@ -45,12 +45,6 @@ app.component("FontIcon", FontIcon);
 import { Auth } from "@/components/ReAuth";
 app.component("Auth", Auth);
 
-// // 初始化钱包
-// import { useOnboardStoreHook } from "@/store/modules/onboard";
-// useOnboardStoreHook().init();
-// // 初始化web3
-// import { useWeb3StoreHook } from "@/store/modules/web3";
-// useWeb3StoreHook().init();
 // 初始化web3Modal
 import { useWeb3ModalStoreHook } from "@/store/modules/web3Modal";
 useWeb3ModalStoreHook().init();

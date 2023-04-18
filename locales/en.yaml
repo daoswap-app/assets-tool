@@ -81,6 +81,7 @@ transaction:
   invalid recipient address: Invalid recipient address
   invalid asset token: Invalid asset token
   invalid amount: Invalid amount
+  exceed balance: Exceed balance
 wallet:
   name: Name
   address: Wallet Address
@@ -88,6 +89,9 @@ wallet:
   ownerCount: Owner(s) Count
   finished: Finished
   confirmNumber: Confirm Number
+  operation: Operation
+  oldOwner: Old Owner
+  newOwner: New Owner
   # 按钮
   btnAdd: Add
   btnSend: Send
@@ -101,8 +105,10 @@ wallet:
   btnNext: Next
   btnPrev: Prev
   btnAddOwner: Add Owner
+  btnSwapOwner: Swap Owner
   btnSelectedWallet: Selected Wallet
   btnChangeWallet: Change Wallet
+  btnChangeThreshold: Change Threshold
   # 提示
   please input wallet name: Please input wallet name
   please input wallet address: Please input wallet address
@@ -112,3 +118,7 @@ wallet:
   please select confirm number: Please select confirm number
   createWallet: Create Wallet
   modifyWallet: Modify Wallet
+  changeThreshold: Change Threshold
+  addOwner: Add Owner
+  swapOwner: Swap Owner
+  removeOwner: Remove Owner

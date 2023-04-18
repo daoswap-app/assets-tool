@@ -26,11 +26,6 @@ async function connect() {
         if (connectedWallet.address) {
           await onLogin();
         }
-        // web3.value = web3;
-        // const accounts = await web3.eth.getAccounts();
-        // if (accounts.length > 0) {
-        //   await onLogin();
-        // }
         loading.value = false;
       });
     loading.value = false;
@@ -63,13 +58,12 @@ const onLogin = async () => {
 /** 使用公共函数，避免`removeEventListener`失效 */
 function onkeypress({ code }: KeyboardEvent) {
   if (code === "Enter") {
-    onLogin();
+    connect();
   }
 }
 
 onMounted(() => {
   window.document.addEventListener("keypress", onkeypress);
-  // getConnectedWallet();
 });
 
 onBeforeUnmount(() => {
@@ -81,10 +75,6 @@ onBeforeUnmount(() => {
   <div>
     <div class="container">
       <div class="wallet" v-if="web3">
-        <!-- <div class="avatar" /> -->
-        <!-- <div class="details">
-          <span>Connected Wallet: {{ web3.eth.ens }}</span>
-        </div> -->
         <el-button
           class="w-full"
           size="default"
@@ -108,10 +98,6 @@ onBeforeUnmount(() => {
       </div>
     </div>
   </div>
-
-  <!-- <el-button class="w-full" size="default" type="primary">
-    {{ t("web3.connect") }}
-  </el-button> -->
 </template>
 
 <style scoped>

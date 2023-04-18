@@ -80,13 +80,17 @@ transaction:
   invalid recipient address: 无效的接收地址
   invalid asset token: 无效的资产Token
   invalid amount: 无效的金额
+  exceed balance: 超出余额
 wallet:
   name: 名称
   address: 钱包地址
-  owners: 拥有者
-  ownerCount: 拥有者数量
+  owners: 所有者
+  ownerCount: 所有者数量
   finished: 完成
   confirmNumber: 确认数量
+  operation: 操作
+  oldOwner: 旧所有者
+  newOwner: 新所有者
   # 按钮
   btnAdd: 添加
   btnSend: 发送
@@ -100,8 +104,10 @@ wallet:
   btnNext: 下一步
   btnPrev: 上一步
   btnAddOwner: 添加所有者
+  btnSwapOwner: 替换所有者
   btnSelectedWallet: 当前选中
   btnChangeWallet: 切换钱包
+  btnChangeThreshold: 修改确认人数
   # 提示
   please input wallet name: 请输入钱包名称
   please input wallet address: 请输入钱包地址
@@ -111,3 +117,7 @@ wallet:
   please select confirm number: 请选择确认数量
   createWallet: 创建钱包
   modifyWallet: 修改钱包
+  changeThreshold: 修改确认人数
+  addOwner: 增加所有者
+  swapOwner: 替换所有者
+  removeOwner: 移除所有者

@@ -8,7 +8,7 @@ import {
 import { formatVisualAmount } from "@/utils/formatters";
 import SendTransaction from "@/components/Wallet/SendTransaction.vue";
 
-import { type AssetItem } from "@/config/constants";
+import { type AssetItem, TOKEN_LIST } from "@/config/constants";
 import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
 import { getContractByABI } from "@/utils/web3";
 import { useWalletStoreHook } from "@/store/modules/wallet";
@@ -17,10 +17,7 @@ defineOptions({
   name: "Assets"
 });
 
-const tokenList = [
-  // "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",
-  "0xdb5D970F03bfD19c1E51D57BcEd114BC35A0808f"
-];
+const tokenList = ref<string[]>([]);
 
 // 变量
 const loading = ref<boolean>(false);
@@ -35,6 +32,9 @@ const formData = ref<AssetItem>(null);
 async function getWeb3() {
   currentWallet.value = useWalletStoreHook().getWallet;
   web3.value = useWeb3ModalStoreHook().getWeb3;
+  // 获取token列表
+  const chainId = await web3.value.eth.getChainId();
+  tokenList.value = TOKEN_LIST[chainId];
 }
 // 查询资产列表
 const getAssets = async () => {
@@ -47,7 +47,7 @@ const getAssets = async () => {
     token: "",
     balance: formatVisualAmount(balanceValue, 18)
   });
-  tokenList.map(async (token: string) => {
+  const getResult = tokenList.value.map(async (token: string) => {
     const contract = getContractByABI(ERC20_ABI, token, web3.value);
     const symbol = await contract.methods.symbol().call();
     const decimals = await contract.methods.decimals().call();
@@ -61,6 +61,7 @@ const getAssets = async () => {
     };
     tableData.value.push(item);
   });
+  await Promise.all(getResult);
   loading.value = false;
 };
 onMounted(() => {
@@ -80,7 +81,7 @@ const handleSend = (row: any) => {
       <template #header>
         <div class="card-header">
           <span class="font-medium">{{
-            transformI18n("assets.assets") + "-" + currentWallet
+            transformI18n("assets.assets") + " - " + currentWallet
           }}</span>
         </div>
       </template>
@@ -104,6 +105,7 @@ const handleSend = (row: any) => {
         <el-table-column :label="transformI18n('assets.operation')">
           <template v-slot="scope">
             <el-button
+              v-if="scope.row.balance > 0"
               type="primary"
               size="small"
               @click="handleSend(scope.row)"

@@ -50,7 +50,7 @@ const defalutFormValue = {
   sendAddress: "",
   recipientAddress: "0x9b1d0c9c1aE96011776e6786b4Efe884665918D2",
   assetToken: "",
-  amount: "10"
+  amount: ""
 };
 const transactionFormRef = ref<FormInstance>();
 const transactionForm = ref<transactionFormType>(defalutFormValue);
@@ -74,6 +74,17 @@ const validateRecipientAddress = (rule: any, value: string, callback: any) => {
       callback(
         new Error(transformI18n("transaction.invalid recipient address"))
       );
+    } else {
+      callback();
+    }
+  }
+};
+const validateAmount = (rule: any, value: string, callback: any) => {
+  if (value === "") {
+    callback(new Error(transformI18n("transaction.please input amount")));
+  } else {
+    if (parseFloat(value) > parseFloat(props.data.balance)) {
+      callback(new Error(transformI18n("transaction.exceed balance")));
     } else {
       callback();
     }
@@ -228,13 +239,7 @@ watch(
         prop="amount"
         :label="transformI18n('transaction.amount')"
         style="width: 100%"
-        :rules="[
-          {
-            required: true,
-            message: transformI18n('transaction.please input amount'),
-            trigger: 'blur'
-          }
-        ]"
+        :rules="[{ validator: validateAmount, trigger: 'blur' }]"
       >
         <el-row :gutter="20" style="width: 100%">
           <el-col :span="24">
@@ -245,10 +250,10 @@ watch(
     </el-form>
     <!-- 操作 -->
     <template #footer>
-      <el-button v-loading="loading" @click="closeDialog">
+      <el-button :loading="loading" @click="closeDialog">
         {{ transformI18n("wallet.btnCancel") }}
       </el-button>
-      <el-button v-loading="loading" type="primary" @click="submitForm">
+      <el-button :loading="loading" type="primary" @click="submitForm">
         {{ transformI18n("wallet.btnSubmit") }}
       </el-button>
     </template>

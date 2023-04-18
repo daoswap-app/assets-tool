@@ -9,10 +9,8 @@ import {
   type ConnectedWalletType
 } from "@/store/modules/web3Modal";
 import Wallet_ABI from "@/assets/abi/Wallet_abi.json";
-import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
 import { WALLET_CONTRACT_ADDRESSES, type WalletItem } from "@/config/constants";
 import { getContractByABI } from "@/utils/web3";
-import { useWalletStoreHook } from "@/store/modules/wallet";
 
 const props = defineProps({
   visible: {
@@ -31,7 +29,6 @@ const loading = ref<boolean>(false);
 const formVisible = ref(false);
 const currentWallet = ref<ConnectedWalletType>(null);
 const web3 = ref<Web3Type>(null);
-const isCreateWallet = ref<Boolean>(true);
 // 表单数据
 type ownersType = {
   address: string;
@@ -42,6 +39,9 @@ type walletFormType = {
   owners: ownersType[];
   confirmNumber: number;
 };
+
+const emit = defineEmits(["update:visible", "refresh-wallet-list"]);
+
 // 表单数据
 const defalutFormValue = { name: "1rens", owners: [], confirmNumber: 1 };
 const walletFormRef = ref<FormInstance>();
@@ -105,6 +105,7 @@ const checkForm = async () => {
   });
   return errorNumber <= 0 && formValidRet;
 };
+// 创建钱包
 const submitForm = async () => {
   const checkRet = await checkForm();
   if (checkRet) {
@@ -113,61 +114,31 @@ const submitForm = async () => {
     walletForm.value.owners.map((item: ownersType) => {
       owners.push(item.address);
     });
-    // 判断是修改还是创建
-    if (isCreateWallet.value) {
-      // 调用合约
-      const contract = getContractByABI(
-        Wallet_ABI,
-        WALLET_CONTRACT_ADDRESSES[currentWallet.value.chainId],
-        web3.value
-      );
-      contract.methods
-        .createWallet(
-          walletForm.value.name,
-          owners,
-          walletForm.value.confirmNumber
-        )
-        .send({
-          from: currentWallet.value.address
-        })
-        .then((res: any) => {
-          console.info(res);
-        })
-        .catch((e: any) => {
-          console.error(e);
-        })
-        .finally(() => {
-          loading.value = false;
-          closeDialog();
-        });
-    } else {
-      const contractAddress = useWalletStoreHook().getWallet;
-      // 调用合约
-      const contract = getContractByABI(
-        MultiSigWallet_ABI,
-        contractAddress,
-        web3.value
-      );
-      contract.methods
-        .createWallet(
-          walletForm.value.name,
-          owners,
-          walletForm.value.confirmNumber
-        )
-        .send({
-          from: currentWallet.value.address
-        })
-        .then((res: any) => {
-          console.info(res);
-        })
-        .catch((e: any) => {
-          console.error(e);
-        })
-        .finally(() => {
-          loading.value = false;
-          closeDialog();
-        });
-    }
+    // 调用合约
+    const contract = getContractByABI(
+      Wallet_ABI,
+      WALLET_CONTRACT_ADDRESSES[currentWallet.value.chainId],
+      web3.value
+    );
+    contract.methods
+      .createWallet(
+        walletForm.value.name,
+        owners,
+        walletForm.value.confirmNumber
+      )
+      .send({
+        from: currentWallet.value.address
+      })
+      .then(() => {
+        emit("refresh-wallet-list");
+      })
+      .catch((e: any) => {
+        console.error(e);
+      })
+      .finally(() => {
+        loading.value = false;
+        closeDialog();
+      });
   }
 };
 const removeOwner = (item: any) => {
@@ -188,7 +159,7 @@ const addOwner = () => {
 const closeDialog = () => {
   formVisible.value = false;
 };
-const emit = defineEmits(["update:visible"]);
+// 监听
 watch(
   () => formVisible.value,
   val => {
@@ -206,7 +177,6 @@ watch(
   val => {
     loading.value = true;
     if (val) {
-      isCreateWallet.value = false;
       walletForm.value.name = val.name;
       walletForm.value.confirmNumber = val.threshold;
       walletForm.value.owners = [];
@@ -217,7 +187,6 @@ watch(
         });
       });
     } else {
-      isCreateWallet.value = true;
       walletForm.value = defalutFormValue;
     }
     loading.value = false;
@@ -236,11 +205,7 @@ watch(
 <template>
   <el-dialog
     v-model="formVisible"
-    :title="
-      transformI18n(
-        isCreateWallet ? 'wallet.createWallet' : 'wallet.modifyWallet'
-      )
-    "
+    :title="transformI18n('wallet.createWallet')"
     width="90%"
     draggable
     :close-on-click-modal="false"
@@ -336,10 +301,10 @@ watch(
     </el-form>
     <!-- 操作 -->
     <template #footer>
-      <el-button v-loading="loading" @click="closeDialog">
+      <el-button :loading="loading" @click="closeDialog">
         {{ transformI18n("wallet.btnCancel") }}
       </el-button>
-      <el-button v-loading="loading" type="primary" @click="submitForm">
+      <el-button :loading="loading" type="primary" @click="submitForm">
         {{ transformI18n("wallet.btnSubmit") }}
       </el-button>
     </template>
