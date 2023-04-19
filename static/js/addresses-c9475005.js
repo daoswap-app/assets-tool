@@ -1,1 +1,0 @@
-import{u as s}from"./utils-6de8de71.js";import{i as t}from"./index-aa19b975.js";const i=r=>t(r)?s.getAddress(r):r,u=r=>{if(!t(r))return!1;try{return s.getAddress(r)===r}catch{return!1}};export{i as c,u as i};
