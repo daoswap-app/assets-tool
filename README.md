@@ -14,4 +14,4 @@ pnpm add 包名
 
 pnpm remove 包名
 
-我认为你应该先 `fork` 项目去开发，以便我更新时您可以同步拉取更新！！！
+yarn deploy -t

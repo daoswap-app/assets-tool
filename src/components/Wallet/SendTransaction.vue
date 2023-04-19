@@ -38,6 +38,9 @@ const formVisible = ref(false);
 const currentWalletAddress = ref<string>("");
 const currentWallet = ref<ConnectedWalletType>(null);
 const web3 = ref<Web3Type>(null);
+
+const emit = defineEmits(["update:visible", "refresh-asset-list"]);
+
 // 表单数据
 type transactionFormType = {
   sendAddress: string;
@@ -48,7 +51,7 @@ type transactionFormType = {
 // 表单数据
 const defalutFormValue = {
   sendAddress: "",
-  recipientAddress: "0x9b1d0c9c1aE96011776e6786b4Efe884665918D2",
+  recipientAddress: "",
   assetToken: "",
   amount: ""
 };
@@ -139,8 +142,8 @@ const submitForm = async () => {
       .send({
         from: currentWallet.value.address
       })
-      .then((res: any) => {
-        console.info(res);
+      .then(() => {
+        emit("refresh-asset-list");
       })
       .catch((e: any) => {
         console.error(e);
@@ -155,7 +158,6 @@ const submitForm = async () => {
 const closeDialog = () => {
   formVisible.value = false;
 };
-const emit = defineEmits(["update:visible"]);
 watch(
   () => formVisible.value,
   val => {

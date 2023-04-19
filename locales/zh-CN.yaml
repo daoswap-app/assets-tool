@@ -69,6 +69,18 @@ transaction:
   amount: 交易金额
   destination: 接收地址
   value: 数量
+  status: 状态
+  statusSuccess: 成功
+  statusRevoke: 驳回
+  noData: 暂无数据
+  type: 类型
+  typeTransfer: 转账
+  typeOperation: 操作
+  # Event
+  eventName: 事件名称
+  eventFrom: 交易账号
+  eventTransactionHash: 交易Hash
+  eventCreateTime: 发起时间
   # 按钮
   btnConfirm: 确认
   btnRevoke: 驳回
@@ -81,6 +93,12 @@ transaction:
   invalid asset token: 无效的资产Token
   invalid amount: 无效的金额
   exceed balance: 超出余额
+  # 方法名称
+  transfer: 转账
+  addOwnerWithThreshold: 添加所有者
+  changeThreshold: 修改确认人数
+  swapOwner: 替换所有者
+  removeOwner: 移除所有者
 wallet:
   name: 名称
   address: 钱包地址

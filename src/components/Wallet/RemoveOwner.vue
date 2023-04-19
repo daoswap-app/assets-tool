@@ -88,12 +88,22 @@ const submitForm = async () => {
       props.data.token,
       props.web3
     );
-    contract.methods
+    // 处理参数
+    const dataEncode = await contract.methods
       .removeOwner(
         prevOwner.value,
         walletForm.value.owner,
         walletForm.value.confirmNumber
       )
+      .encodeABI();
+    const params = {
+      destination: props.data.token,
+      value: "0",
+      data: dataEncode
+    };
+    // 发送交易
+    contract.methods
+      .submitTransaction(params.destination, params.value, params.data)
       .send({
         from: props.connectedWallet.address
       })
@@ -146,7 +156,10 @@ watch(
     if (val) {
       walletForm.value.owner = props.owner;
       ownerCount.value = parseInt(val.ownerCount) - 1;
-      walletForm.value.confirmNumber = val.threshold;
+      walletForm.value.confirmNumber =
+        parseInt(val.threshold) <= ownerCount.value
+          ? parseInt(val.threshold)
+          : ownerCount.value;
     } else {
       walletForm.value = defalutFormValue;
     }

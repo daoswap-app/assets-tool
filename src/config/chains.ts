@@ -32,8 +32,10 @@ export const chains: (Chain | ChainWithDecimalId)[] = [
     rpcUrl: "https://endpoints.omniatech.io/v1/bsc/testnet/public",
     color: "green",
     // icon: "https://tokenlists.daoswap.cc/daoswap.svg",
-    publicRpcUrl: "https://endpoints.omniatech.io/v1/bsc/testnet/public", // https://bsc-testnet.public.blastapi.io
+    publicRpcUrl: "https://endpoints.omniatech.io/v1/bsc/testnet/public",
     blockExplorerUrl: "https://testnet.bscscan.com"
+    // "https://endpoints.omniatech.io/v1/bsc/testnet/public",
+    // https://bsc-testnet.public.blastapi.io
   }
 ];
 

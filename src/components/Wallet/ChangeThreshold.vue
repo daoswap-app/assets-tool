@@ -69,8 +69,18 @@ const submitForm = async () => {
       props.data.token,
       props.web3
     );
-    contract.methods
+    // 处理参数
+    const dataEncode = await contract.methods
       .changeThreshold(walletForm.value.confirmNumber)
+      .encodeABI();
+    const params = {
+      destination: props.data.token,
+      value: "0",
+      data: dataEncode
+    };
+    // 发送交易
+    contract.methods
+      .submitTransaction(params.destination, params.value, params.data)
       .send({
         from: props.connectedWallet.address
       })

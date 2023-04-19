@@ -6,6 +6,8 @@ import {
   type ConnectedWalletType
 } from "@/store/modules/web3Modal";
 import { formatVisualAmount } from "@/utils/formatters";
+import { getChainInfo } from "@/config/chains";
+import { hexValue } from "@ethersproject/bytes";
 
 defineOptions({
   name: "HomeBalance"
@@ -27,6 +29,7 @@ const connectedWallet = ref<ConnectedWalletType | null>(null);
 const web3 = ref<Web3Type | null>(null);
 const balance = ref<string>("0");
 const symbol = ref<string>("BNB");
+const chainInfo = ref(null);
 
 // 方法
 async function loadData() {
@@ -34,11 +37,12 @@ async function loadData() {
   connectedWallet.value = props.connectedWallet;
   web3.value = props.web3;
   if (web3.value) {
-    // const network = await web3.value.eth.getCode();
+    const chainId = await web3.value.eth.getChainId();
+    chainInfo.value = getChainInfo(hexValue(parseInt(chainId)));
     const balanceValue = await web3.value.eth.getBalance(
       connectedWallet.value.address
     );
-    // symbol.value = network.name;
+    symbol.value = chainInfo.value.token;
     balance.value = formatVisualAmount(balanceValue, 18);
   }
   loading.value = false;

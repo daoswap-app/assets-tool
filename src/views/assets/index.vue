@@ -8,10 +8,16 @@ import {
 import { formatVisualAmount } from "@/utils/formatters";
 import SendTransaction from "@/components/Wallet/SendTransaction.vue";
 
-import { type AssetItem, TOKEN_LIST } from "@/config/constants";
+import {
+  TOKEN_LIST,
+  type AssetItem,
+  type TokenListType
+} from "@/config/constants";
+import { getChainInfo } from "@/config/chains";
 import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
 import { getContractByABI } from "@/utils/web3";
 import { useWalletStoreHook } from "@/store/modules/wallet";
+import { hexValue } from "@ethersproject/bytes";
 
 defineOptions({
   name: "Assets"
@@ -27,6 +33,7 @@ const tableData = ref<AssetItem[]>([]);
 
 const formDialogVisible = ref(false);
 const formData = ref<AssetItem>(null);
+const chainInfo = ref(null);
 
 // 方法
 async function getWeb3() {
@@ -34,34 +41,38 @@ async function getWeb3() {
   web3.value = useWeb3ModalStoreHook().getWeb3;
   // 获取token列表
   const chainId = await web3.value.eth.getChainId();
-  tokenList.value = TOKEN_LIST[chainId];
+  TOKEN_LIST[chainId].map((item: TokenListType) => {
+    tokenList.value.push(item.token);
+  });
+  chainInfo.value = getChainInfo(hexValue(parseInt(chainId)));
 }
 // 查询资产列表
 const getAssets = async () => {
   loading.value = true;
-  const balanceValue = await web3.value.eth.getBalance(
-    useWalletStoreHook().getWallet
-  );
-  tableData.value.push({
-    symbol: "BNB",
-    token: "",
-    balance: formatVisualAmount(balanceValue, 18)
-  });
-  const getResult = tokenList.value.map(async (token: string) => {
-    const contract = getContractByABI(ERC20_ABI, token, web3.value);
-    const symbol = await contract.methods.symbol().call();
-    const decimals = await contract.methods.decimals().call();
-    const balanceValue = await contract.methods
-      .balanceOf(useWalletStoreHook().getWallet)
-      .call();
-    const item = {
-      symbol: symbol,
-      token: token,
-      balance: formatVisualAmount(balanceValue, decimals)
-    };
-    tableData.value.push(item);
-  });
-  await Promise.all(getResult);
+  tableData.value = [];
+  if (currentWallet.value) {
+    const balanceValue = await web3.value.eth.getBalance(currentWallet.value);
+    tableData.value.push({
+      symbol: chainInfo.value.token,
+      token: "",
+      balance: formatVisualAmount(balanceValue, 18)
+    });
+    const getResult = tokenList.value.map(async (token: string) => {
+      const contract = getContractByABI(ERC20_ABI, token, web3.value);
+      const symbol = await contract.methods.symbol().call();
+      const decimals = await contract.methods.decimals().call();
+      const balanceValue = await contract.methods
+        .balanceOf(useWalletStoreHook().getWallet)
+        .call();
+      const item = {
+        symbol: symbol,
+        token: token,
+        balance: formatVisualAmount(balanceValue, decimals)
+      };
+      tableData.value.push(item);
+    });
+    await Promise.all(getResult);
+  }
   loading.value = false;
 };
 onMounted(() => {
@@ -72,6 +83,10 @@ onMounted(() => {
 const handleSend = (row: any) => {
   formDialogVisible.value = true;
   formData.value = row;
+};
+// 刷新列表
+const handleRefreshAssetList = () => {
+  getAssets();
 };
 </script>
 
@@ -120,6 +135,7 @@ const handleSend = (row: any) => {
       v-model:visible="formDialogVisible"
       :data="formData"
       :tokenList="tableData"
+      @refresh-asset-list="handleRefreshAssetList"
     />
   </div>
 </template>

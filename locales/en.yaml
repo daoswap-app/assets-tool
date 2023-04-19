@@ -70,6 +70,18 @@ transaction:
   amount: Amount
   destination: Destination
   value: Value
+  status: Status
+  statusSuccess: Success
+  statusRevoke: Revoke
+  noData: No Data
+  type: Type
+  typeTransfer: Transfer
+  typeOperation: Operation
+  # Event
+  eventName: Event Name
+  eventFrom: From
+  eventTransactionHash: Transaction Hash
+  eventCreateTime: Create Time
   # 按钮
   btnConfirm: Confirm
   btnRevoke: Revoke
@@ -82,6 +94,12 @@ transaction:
   invalid asset token: Invalid asset token
   invalid amount: Invalid amount
   exceed balance: Exceed balance
+  # 方法名称
+  transfer: Transfer
+  addOwnerWithThreshold: Add Owner
+  changeThreshold: Change Threshold
+  swapOwner: Swap Owner
+  removeOwner: Remove Owner
 wallet:
   name: Name
   address: Wallet Address

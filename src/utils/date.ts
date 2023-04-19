@@ -4,7 +4,7 @@
  * @param {string} cFormat
  * @returns {string | null}
  */
-export function parseTime(time: any, cFormat: string): string | null {
+export function parseTime(time: any, cFormat?: string): string | null {
   if (time === "") {
     return "";
   }
