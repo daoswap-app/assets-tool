@@ -1,0 +1,1 @@
+import{u as s}from"./utils-cebc3d35.js";import{a4 as t}from"./chains-5e4fdd5e.js";const u=r=>t(r)?s.getAddress(r):r,i=r=>{if(!t(r))return!1;try{return s.getAddress(r)===r}catch{return!1}};export{u as c,i};
