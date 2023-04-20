@@ -55,6 +55,7 @@ const useWeb3ModalStore = defineStore({
         } else {
           useUserStoreHook().logOut();
         }
+        window.location.reload();
       });
       provider.on("chainChanged", async () => {
         // const chainIdNumber = Web3.utils.hexToNumber(chainId);

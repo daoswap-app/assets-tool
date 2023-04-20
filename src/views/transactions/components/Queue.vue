@@ -298,7 +298,13 @@ const handleRevoke = (value: any) => {
             <el-table-column :label="transformI18n('transaction.eventName')">
               <template v-slot="event">
                 <div style="display: flex; align-items: left">
-                  <span>{{ event.row.eventName }}</span>
+                  <span>
+                    {{
+                      event.row.eventName
+                        ? transformI18n("transaction." + event.row.eventName)
+                        : ""
+                    }}
+                  </span>
                 </div>
               </template>
             </el-table-column>
@@ -345,7 +351,7 @@ const handleRevoke = (value: any) => {
       <el-table-column :label="transformI18n('transaction.destination')">
         <template v-slot="scope">
           <div style="display: flex; align-items: left">
-            <span style="margin-left: 10px">{{ scope.row.destination }}</span>
+            <span>{{ scope.row.destination }}</span>
           </div>
         </template>
       </el-table-column>

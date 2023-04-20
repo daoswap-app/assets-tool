@@ -35,6 +35,7 @@ const defaultWallet = ref<string>(null);
 
 const getWalletListData = async () => {
   try {
+    defaultWallet.value = useWalletStoreHook().getWallet;
     // 查询钱包列表
     const contractWallet = getContractByABI(
       Wallet_ABI,
@@ -80,11 +81,8 @@ const handleManageWallet = (wallet?: WalletItem) => {
 };
 // 修改默认钱包
 const handleChangeWallet = (wallet: WalletItem) => {
-  nextTick(() => {
-    dataLoading.value = true;
-    useWalletStoreHook().setDefaultWallet(wallet.token);
-    getWalletListData();
-  });
+  useWalletStoreHook().setDefaultWallet(wallet.token);
+  getWalletListData();
 };
 // 刷新列表
 const handleRefreshWalletList = () => {

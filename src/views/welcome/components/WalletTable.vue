@@ -47,14 +47,7 @@ const dialogVisibleOfAddOwner = ref<boolean>(false);
 const dialogVisibleOfSwapOwner = ref<boolean>(false);
 const dialogVisibleOfRemoveOwner = ref<boolean>(false);
 // 方法
-const emit = defineEmits([
-  "refresh-wallet-list",
-  "change-wallet",
-  "change-threshold",
-  "add-owner",
-  "swap-owner",
-  "remove-owner"
-]);
+const emit = defineEmits(["refresh-wallet-list", "change-wallet"]);
 // 刷新数据
 const handleRefreshData = () => {
   emit("refresh-wallet-list");

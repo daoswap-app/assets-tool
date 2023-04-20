@@ -3,11 +3,11 @@ import { chainIds } from "./chains";
 // Wallet Contract Address
 export const WALLET_CONTRACT_ADDRESSES: { [chainId: string]: string } = {
   [chainIds.localhost]: "0x31B48B6484c7D93f43a3838652A86b18740E37C6",
-  [chainIds.bnbt]: "0xE43b097d7A2C102fFa9ac6c05bdc4D6B55842Ec5"
+  [chainIds.bnbt]: "0x1B08d2E45219c57dce50410bd73880AcFD2bEe36"
 };
 export const EventFromBlock: { [chainId: string]: number } = {
   [chainIds.localhost]: 402,
-  [chainIds.bnbt]: 29073381
+  [chainIds.bnbt]: 29090975
 };
 export const EventMaxQueryNumber = 5000;
 

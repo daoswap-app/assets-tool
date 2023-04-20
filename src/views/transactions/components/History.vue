@@ -176,9 +176,20 @@ const getTransactionList = async () => {
           toBlock: toBlock
         }
       );
+      const eventsOfTransactionExecuted = await contract.getPastEvents(
+        "TransactionExecuted",
+        {
+          filter: {
+            transactionId: id
+          },
+          fromBlock: currentFromBlock,
+          toBlock: toBlock
+        }
+      );
       const events = eventsOfTransactionCreated.concat(
         eventsOfTransactionConfirmed,
-        eventsOfTransactionRevoke
+        eventsOfTransactionRevoke,
+        eventsOfTransactionExecuted
       );
       if (events.length > 0) {
         const getResultForEvent = events.map(async (event: any) => {
@@ -225,7 +236,13 @@ onMounted(() => {
             <el-table-column :label="transformI18n('transaction.eventName')">
               <template v-slot="event">
                 <div style="display: flex; align-items: left">
-                  <span>{{ event.row.eventName }}</span>
+                  <span>
+                    {{
+                      event.row.eventName
+                        ? transformI18n("transaction." + event.row.eventName)
+                        : ""
+                    }}
+                  </span>
                 </div>
               </template>
             </el-table-column>
@@ -272,7 +289,7 @@ onMounted(() => {
       <el-table-column :label="transformI18n('transaction.destination')">
         <template v-slot="scope">
           <div style="display: flex; align-items: left">
-            <span style="margin-left: 10px">{{ scope.row.destination }}</span>
+            <span>{{ scope.row.destination }}</span>
           </div>
         </template>
       </el-table-column>

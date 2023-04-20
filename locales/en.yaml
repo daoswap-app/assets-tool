@@ -100,6 +100,10 @@ transaction:
   changeThreshold: Change Threshold
   swapOwner: Swap Owner
   removeOwner: Remove Owner
+  TransactionCreated: Created
+  TransactionConfirmed: Confirmed
+  TransactionRevoke: Revoke
+  TransactionExecuted: Executed
 wallet:
   name: Name
   address: Wallet Address

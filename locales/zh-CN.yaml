@@ -99,6 +99,10 @@ transaction:
   changeThreshold: 修改确认人数
   swapOwner: 替换所有者
   removeOwner: 移除所有者
+  TransactionCreated: 创建
+  TransactionConfirmed: 确认
+  TransactionRevoke: 驳回
+  TransactionExecuted: 执行
 wallet:
   name: 名称
   address: 钱包地址
