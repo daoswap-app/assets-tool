@@ -5,7 +5,7 @@ import {
   useWeb3ModalStoreHook,
   type Web3Type
 } from "@/store/modules/web3Modal";
-import { formatVisualAmount } from "@/utils/formatters";
+// import { formatVisualAmount } from "@/utils/formatters";
 import SendTransaction from "@/components/Wallet/SendTransaction.vue";
 
 import {
@@ -15,7 +15,7 @@ import {
 } from "@/config/constants";
 import { getChainInfo } from "@/config/chains";
 import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
-import { getContractByABI } from "@/utils/web3";
+import { getContractByABI, weiToEther } from "@/utils/web3";
 import { useWalletStoreHook } from "@/store/modules/wallet";
 import { hexValue } from "@ethersproject/bytes";
 
@@ -55,19 +55,19 @@ const getAssets = async () => {
     tableData.value.push({
       symbol: chainInfo.value.token,
       token: "",
-      balance: formatVisualAmount(balanceValue, 18)
+      balance: weiToEther(balanceValue, web3.value) // formatVisualAmount(balanceValue, 18)
     });
     const getResult = tokenList.value.map(async (token: string) => {
       const contract = getContractByABI(ERC20_ABI, token, web3.value);
       const symbol = await contract.methods.symbol().call();
-      const decimals = await contract.methods.decimals().call();
+      // const decimals = await contract.methods.decimals().call();
       const balanceValue = await contract.methods
         .balanceOf(useWalletStoreHook().getWallet)
         .call();
       const item = {
         symbol: symbol,
         token: token,
-        balance: formatVisualAmount(balanceValue, decimals)
+        balance: weiToEther(balanceValue, web3.value) // formatVisualAmount(balanceValue, decimals)
       };
       tableData.value.push(item);
     });
@@ -120,7 +120,7 @@ const handleRefreshAssetList = () => {
         <el-table-column :label="transformI18n('assets.operation')">
           <template v-slot="scope">
             <el-button
-              v-if="scope.row.balance > 0"
+              v-if="parseFloat(scope.row.balance) > 0"
               type="primary"
               size="small"
               @click="handleSend(scope.row)"

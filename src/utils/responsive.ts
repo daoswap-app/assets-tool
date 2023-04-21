@@ -3,7 +3,7 @@ import { App } from "vue";
 import Storage from "responsive-storage";
 import { routerArrays } from "@/layout/types";
 
-const nameSpace = "assetstool-";
+const nameSpace = "responsive-";
 
 export const injectResponsiveStorage = (app: App, config: ServerConfigs) => {
   const configObj = Object.assign(
