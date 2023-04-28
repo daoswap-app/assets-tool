@@ -218,6 +218,7 @@ watch(
       label-width="100px"
       class="demo-ruleForm"
       :hide-required-asterisk="true"
+      label-position="top"
     >
       <el-form-item
         prop="name"
@@ -247,11 +248,8 @@ watch(
           :error="owner.error"
         >
           <el-row :gutter="10" style="width: 100%">
-            <el-col :xs="4" :md="1">{{ index + 1 }}</el-col>
-            <!-- <el-col :xs="20" :md="4">
-              <el-input v-model="owner.name" @blur="checkForm()" />
-            </el-col> -->
-            <el-col :xs="14" :md="19">
+            <el-col :xs="1" :md="1">{{ index + 1 }}</el-col>
+            <el-col :xs="17" :md="19">
               <el-input v-model="owner.address" @blur="checkForm()" />
             </el-col>
             <el-col :xs="6" :md="4">
@@ -281,7 +279,7 @@ watch(
         ]"
       >
         <el-row :gutter="20" style="width: 100%">
-          <el-col :span="2">
+          <el-col :xs="8" :md="2">
             <el-select v-model="walletForm.confirmNumber">
               <el-option
                 v-for="item in walletForm.owners.length"
@@ -291,11 +289,11 @@ watch(
               />
             </el-select>
           </el-col>
-          <el-col :span="1">/</el-col>
-          <el-col :span="2">
+          <el-col :xs="1" :md="1">/</el-col>
+          <el-col :xs="8" :md="2">
             {{ walletForm.owners.length }}
           </el-col>
-          <el-col :span="19" />
+          <el-col :xs="7" :md="19" />
         </el-row>
       </el-form-item>
     </el-form>

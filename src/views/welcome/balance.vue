@@ -51,7 +51,7 @@ async function loadData() {
 onMounted(() => {
   loadData();
 });
-// // 订阅监听
+// 订阅监听
 // watch([props.connectedWallet.address], () => {
 //   loadData();
 // });
@@ -65,20 +65,15 @@ onMounted(() => {
           <span class="font-medium">{{ transformI18n("account.info") }}</span>
         </div>
       </template>
-      <el-descriptions :column="1" border>
-        <el-descriptions-item>
-          <template v-slot:label>
-            {{ transformI18n("account.address") }}
-          </template>
-          {{ connectedWallet?.address ?? "" }}
-        </el-descriptions-item>
-        <el-descriptions-item>
-          <template v-slot:label>
-            {{ transformI18n("account.balance") }}
-          </template>
-          {{ balance + " " + symbol }}
-        </el-descriptions-item>
-      </el-descriptions>
+      <p style="word-wrap: break-word">
+        {{ transformI18n("account.address") }}:
+        {{ connectedWallet?.address ?? "" }}
+      </p>
+      <br />
+      <p style="word-wrap: break-word">
+        {{ transformI18n("account.balance") }}:
+        {{ balance + " " + symbol }}
+      </p>
     </el-card>
   </div>
 </template>

@@ -13,17 +13,17 @@ export const chains: (Chain | ChainWithDecimalId)[] = [
     publicRpcUrl: "http://127.0.0.1:8545",
     blockExplorerUrl: "https://bscscan.com"
   },
-  {
-    id: "0x38",
-    namespace: "evm",
-    token: "BNB",
-    label: "BSC Mainnet",
-    rpcUrl: "https://bsc-dataseed3.defibit.io",
-    color: "yellow",
-    // icon: "https://tokenlists.daoswap.cc/daoswap.svg",
-    publicRpcUrl: "https://bsc-dataseed3.defibit.io",
-    blockExplorerUrl: "https://bscscan.com"
-  },
+  // {
+  //   id: "0x38",
+  //   namespace: "evm",
+  //   token: "BNB",
+  //   label: "BSC Mainnet",
+  //   rpcUrl: "https://bsc-dataseed3.defibit.io",
+  //   color: "yellow",
+  //   // icon: "https://tokenlists.daoswap.cc/daoswap.svg",
+  //   publicRpcUrl: "https://bsc-dataseed3.defibit.io",
+  //   blockExplorerUrl: "https://bscscan.com"
+  // },
   {
     id: "0x61",
     namespace: "evm",

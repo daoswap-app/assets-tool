@@ -15,6 +15,7 @@ const router = useRouter();
 const loading = ref(false);
 
 const web3 = ref<Web3>(null);
+const isSupport = ref<boolean>(true);
 
 async function connect() {
   try {
@@ -22,8 +23,9 @@ async function connect() {
     useWeb3ModalStoreHook()
       .getConnectedWallet()
       .then(async (connectedWallet: ConnectedWalletType) => {
+        isSupport.value = connectedWallet.isSupport;
         web3.value = useWeb3ModalStoreHook().getWeb3;
-        if (connectedWallet.address) {
+        if (connectedWallet.address && isSupport.value) {
           await onLogin();
         }
         loading.value = false;
@@ -74,7 +76,7 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <div class="container">
-      <div class="wallet" v-if="web3">
+      <div class="wallet" v-if="web3 && isSupport">
         <el-button
           class="w-full"
           size="default"
@@ -85,7 +87,7 @@ onBeforeUnmount(() => {
           {{ transformI18n("web3.disconnect") }}
         </el-button>
       </div>
-      <div v-else>
+      <div v-else-if="!web3 && isSupport">
         <el-button
           class="w-full"
           size="default"
@@ -95,6 +97,9 @@ onBeforeUnmount(() => {
         >
           {{ transformI18n("web3.connectWallet") }}
         </el-button>
+      </div>
+      <div v-else>
+        {{ transformI18n("web3.noSupportChain") }}
       </div>
     </div>
   </div>

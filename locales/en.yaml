@@ -49,6 +49,7 @@ web3:
   connect: Connect
   connectWallet: Connect Wallet
   disconnect: Disconnect
+  noSupportChain: No Support Chain
 account:
   info: Account Info
   address: address

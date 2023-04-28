@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watchEffect } from "vue";
 import Balance from "./balance.vue";
 import Wallet from "./wallet.vue";
 import {
@@ -24,16 +24,10 @@ async function getWeb3() {
   loading.value = false;
 }
 // 订阅监听
-// watch(
-//   () => useWeb3ModalStoreHook().getWalletAddress,
-//   () => {
-//     getWeb3();
-//   }
-// );
-
-watch([useWeb3ModalStoreHook().connectedWallet], () => {
+watchEffect(() => {
   getWeb3();
 });
+
 // useWeb3ModalStoreHook().$subscribe(() => {
 //   getWeb3();
 // });
@@ -44,7 +38,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="connectedWallet && web3">
+  <div v-if="connectedWallet && web3" :key="connectedWallet.address">
     <div>
       <Balance :connectedWallet="connectedWallet" :web3="web3" />
     </div>

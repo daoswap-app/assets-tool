@@ -194,6 +194,7 @@ watch(
       label-width="100px"
       class="demo-ruleForm"
       :hide-required-asterisk="true"
+      label-position="top"
     >
       <el-form-item
         prop="sendAddress"

@@ -192,6 +192,7 @@ watch(
       label-width="100px"
       class="demo-ruleForm"
       :hide-required-asterisk="true"
+      label-position="top"
     >
       <el-form-item
         prop="owner"
@@ -219,7 +220,7 @@ watch(
         ]"
       >
         <el-row :gutter="20" style="width: 100%">
-          <el-col :span="2">
+          <el-col :xs="8" :md="2">
             <el-select v-model="walletForm.confirmNumber">
               <el-option
                 v-for="item in ownerCount"
@@ -229,11 +230,11 @@ watch(
               />
             </el-select>
           </el-col>
-          <el-col :span="1">/</el-col>
-          <el-col :span="2">
+          <el-col :xs="1" :md="1">/</el-col>
+          <el-col :xs="8" :md="2">
             {{ ownerCount }}
           </el-col>
-          <el-col :span="19" />
+          <el-col :xs="7" :md="19" />
         </el-row>
       </el-form-item>
     </el-form>

@@ -40,7 +40,7 @@ function tabClick({ index }) {
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <span class="font-medium">{{
+          <span class="font-medium" style="word-wrap: break-word">{{
             transformI18n("transaction.transactions") + " - " + currentWallet
           }}</span>
         </div>

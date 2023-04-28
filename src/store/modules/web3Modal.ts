@@ -3,6 +3,8 @@ import Web3Modal from "web3modal";
 import { provider } from "web3-core";
 import { defineStore } from "pinia";
 import { store } from "@/store";
+import { getChainInfo } from "@/config/chains";
+import { hexValue } from "@ethersproject/bytes";
 import { useUserStoreHook } from "@/store/modules/user";
 
 export type Web3Type = Web3;
@@ -13,6 +15,7 @@ export type ConnectedWalletType = {
   address: string;
   ens?: string;
   provider: provider;
+  isSupport: boolean;
 };
 
 type Web3ModalType = {
@@ -55,7 +58,6 @@ const useWeb3ModalStore = defineStore({
         } else {
           useUserStoreHook().logOut();
         }
-        window.location.reload();
       });
       provider.on("chainChanged", async () => {
         // const chainIdNumber = Web3.utils.hexToNumber(chainId);
@@ -107,12 +109,16 @@ const useWeb3ModalStore = defineStore({
       const account = accounts[0];
       if (!account) return null;
 
+      const chainId = await web3.eth.getChainId();
+      const chainInfo = getChainInfo(hexValue(parseInt(chainId)));
+
       this.connectedWallet = {
         label: web3.eth.ens.registryAddress,
-        chainId: await web3.eth.getChainId(),
-        address: Web3.utils.toChecksumAddress(accounts[0]),
+        chainId: chainId,
+        address: Web3.utils.toChecksumAddress(account),
         ens: web3.eth.ens.registryAddress,
-        provider: web3.eth.currentProvider
+        provider: web3.eth.currentProvider,
+        isSupport: chainInfo ? true : false
       };
       return this.connectedWallet;
     },

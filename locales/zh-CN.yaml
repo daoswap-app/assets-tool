@@ -48,6 +48,7 @@ web3:
   connect: 连接
   connectWallet: 连接钱包
   disconnect: 断开连接
+  noSupportChain: 不支持当前链
 account:
   info: 账户信息
   address: 地址

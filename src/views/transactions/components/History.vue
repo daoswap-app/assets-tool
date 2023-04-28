@@ -232,46 +232,72 @@ onMounted(() => {
     <el-table v-loading="loading" :data="tableDataHistory" style="width: 100%">
       <el-table-column type="expand">
         <template v-slot="scope">
-          <el-table :data="scope.row.events" style="width: 100%">
-            <el-table-column :label="transformI18n('transaction.eventName')">
-              <template v-slot="event">
-                <div style="display: flex; align-items: left">
-                  <span>
-                    {{
-                      event.row.eventName
-                        ? transformI18n("transaction." + event.row.eventName)
-                        : ""
-                    }}
-                  </span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column :label="transformI18n('transaction.eventFrom')">
-              <template v-slot="event">
-                <div style="display: flex; align-items: left">
-                  <span>{{ event.row.from }}</span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column
-              :label="transformI18n('transaction.eventTransactionHash')"
-            >
-              <template v-slot="event">
-                <div style="display: flex; align-items: left">
-                  <span>{{ event.row.transactionHash }}</span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column
-              :label="transformI18n('transaction.eventCreateTime')"
-            >
-              <template v-slot="event">
-                <div style="display: flex; align-items: left">
-                  <span>{{ event.row.createTime }}</span>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
+          <p style="word-wrap: break-word">
+            {{ transformI18n("transaction.destination") }}:
+            {{ scope.row.destination }}
+          </p>
+          <el-divider />
+          <div class="block">
+            <el-timeline v-if="scope.row.events.length > 0">
+              <el-timeline-item
+                v-for="(event, index) in scope.row.events"
+                :key="index"
+                :timestamp="event.createTime"
+                placement="top"
+              >
+                <el-card>
+                  <h4>
+                    {{ transformI18n("transaction.eventName") }}:
+                    <el-tag
+                      v-if="event.eventName == 'TransactionCreated'"
+                      type="warning"
+                    >
+                      {{
+                        event.eventName
+                          ? transformI18n("transaction." + event.eventName)
+                          : ""
+                      }}
+                    </el-tag>
+                    <el-tag
+                      v-if="event.eventName == 'TransactionConfirmed'"
+                      type="success"
+                    >
+                      {{
+                        event.eventName
+                          ? transformI18n("transaction." + event.eventName)
+                          : ""
+                      }}
+                    </el-tag>
+                    <el-tag
+                      v-if="event.eventName == 'TransactionRevoke'"
+                      type="danger"
+                    >
+                      {{
+                        event.eventName
+                          ? transformI18n("transaction." + event.eventName)
+                          : ""
+                      }}
+                    </el-tag>
+                    <el-tag v-if="event.eventName == 'TransactionExecuted'">
+                      {{
+                        event.eventName
+                          ? transformI18n("transaction." + event.eventName)
+                          : ""
+                      }}
+                    </el-tag>
+                  </h4>
+                  <p style="word-wrap: break-word">
+                    {{ transformI18n("transaction.eventFrom") }}:
+                    <span>{{ event.from }}</span>
+                  </p>
+                  <p style="word-wrap: break-word">
+                    {{ transformI18n("transaction.eventTransactionHash") }}:
+                    <span>{{ event.transactionHash }}</span>
+                  </p>
+                </el-card>
+              </el-timeline-item>
+            </el-timeline>
+          </div>
         </template>
       </el-table-column>
       <el-table-column :label="transformI18n('transaction.type')">
@@ -283,13 +309,6 @@ onMounted(() => {
             <el-tag v-if="scope.row.type == 2" type="warning">
               {{ transformI18n("transaction." + scope.row.methodName) }}
             </el-tag>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column :label="transformI18n('transaction.destination')">
-        <template v-slot="scope">
-          <div style="display: flex; align-items: left">
-            <span>{{ scope.row.destination }}</span>
           </div>
         </template>
       </el-table-column>

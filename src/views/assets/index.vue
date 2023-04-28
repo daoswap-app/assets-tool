@@ -95,7 +95,7 @@ const handleRefreshAssetList = () => {
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <span class="font-medium">{{
+          <span class="font-medium" style="word-wrap: break-word">{{
             transformI18n("assets.assets") + " - " + currentWallet
           }}</span>
         </div>

@@ -10,6 +10,7 @@ import ChangeThreshold from "@/components/Wallet/ChangeThreshold.vue";
 import AddOwner from "@/components/Wallet/AddOwner.vue";
 import SwapOwner from "@/components/Wallet/SwapOwner.vue";
 import RemoveOwner from "@/components/Wallet/RemoveOwner.vue";
+import ArrowDownSLine from "@iconify-icons/ri/arrow-down-s-line";
 
 defineOptions({
   name: "WalletTable"
@@ -105,7 +106,7 @@ onMounted(() => {
     <el-table :data="tableData" style="width: 100%">
       <el-table-column type="expand">
         <template v-slot="scope">
-          <el-table :data="scope.row.owners" style="width: 100%">
+          <el-table :data="scope.row.owners" stripe style="width: 100%">
             <el-table-column :label="transformI18n('wallet.address')">
               <template v-slot="owner">
                 <div style="display: flex; align-items: left">
@@ -115,23 +116,29 @@ onMounted(() => {
             </el-table-column>
             <el-table-column :label="transformI18n('wallet.operation')">
               <template v-slot="owner">
-                <!-- 替换所有者 -->
-                <el-button
-                  type="primary"
-                  size="small"
-                  @click="handleSwapOwner(scope.row, owner.row)"
-                >
-                  {{ transformI18n("wallet.btnSwapOwner") }}
-                </el-button>
-                <!-- 移除所有者 -->
-                <el-button
-                  v-if="scope.row.owners.length > 1"
-                  type="danger"
-                  size="small"
-                  @click="handleRemoveOwner(scope.row, owner.row)"
-                >
-                  {{ transformI18n("wallet.btnDelete") }}
-                </el-button>
+                <el-dropdown trigger="click">
+                  <IconifyIconOffline
+                    :icon="ArrowDownSLine"
+                    class="text-[24px]"
+                  />
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <!-- 替换所有者 -->
+                      <el-dropdown-item
+                        @click="handleSwapOwner(scope.row, owner.row)"
+                      >
+                        {{ transformI18n("wallet.btnSwapOwner") }}
+                      </el-dropdown-item>
+                      <!-- 添加所有者 -->
+                      <el-dropdown-item
+                        @click="handleRemoveOwner(scope.row, owner.row)"
+                        divided
+                      >
+                        {{ transformI18n("wallet.btnDelete") }}
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
               </template>
             </el-table-column>
           </el-table>
@@ -166,54 +173,42 @@ onMounted(() => {
           </div>
         </template>
       </el-table-column>
-      <el-table-column
-        :label="transformI18n('wallet.operation')"
-        fixed="right"
-        width="400"
-      >
+      <el-table-column :label="transformI18n('wallet.operation')">
         <template v-slot="scope">
-          <!-- 修改默认钱包 -->
-          <el-button
-            size="small"
-            type="primary"
-            :disabled="
-              scope.row.token.toLowerCase() ===
-              props.currentWallet.toLowerCase()
-            "
-            @click="handleChangeWallet(scope.row)"
-          >
-            {{
-              scope.row.token.toLowerCase() ===
-              props.currentWallet.toLowerCase()
-                ? transformI18n("wallet.btnSelectedWallet")
-                : transformI18n("wallet.btnChangeWallet")
-            }}
-          </el-button>
-          <!-- 重命名 -->
-          <!-- <el-button
-            type="danger"
-            size="small"
-            @click="handleRevoke(scope.row)"
-          >
-            {{ transformI18n("wallet.btnRename") }}
-          </el-button> -->
-          <!-- 添加所有者 -->
-          <el-button
-            v-if="!scope.row.confirmStatus"
-            type="primary"
-            size="small"
-            @click="handleAddOwner(scope.row)"
-          >
-            {{ transformI18n("wallet.btnAddOwner") }}
-          </el-button>
-          <!-- 修改确认数量 -->
-          <el-button
-            type="primary"
-            size="small"
-            @click="handleChangeThreshold(scope.row)"
-          >
-            {{ transformI18n("wallet.btnChangeThreshold") }}
-          </el-button>
+          <el-dropdown trigger="click">
+            <IconifyIconOffline :icon="ArrowDownSLine" class="text-[24px]" />
+            <template #dropdown>
+              <el-dropdown-menu>
+                <!-- 修改默认钱包 -->
+                <el-dropdown-item
+                  :disabled="
+                    scope.row.token.toLowerCase() ===
+                    props.currentWallet.toLowerCase()
+                  "
+                  @click="handleChangeWallet(scope.row)"
+                >
+                  {{
+                    scope.row.token.toLowerCase() ===
+                    props.currentWallet.toLowerCase()
+                      ? transformI18n("wallet.btnSelectedWallet")
+                      : transformI18n("wallet.btnChangeWallet")
+                  }}
+                </el-dropdown-item>
+                <!-- 重命名 -->
+                <!-- <el-dropdown-item @click="handleAddOwner(scope.row)" divided>
+                  {{ transformI18n("wallet.btnRename") }}
+                </el-dropdown-item> -->
+                <!-- 添加所有者 -->
+                <el-dropdown-item @click="handleAddOwner(scope.row)" divided>
+                  {{ transformI18n("wallet.btnAddOwner") }}
+                </el-dropdown-item>
+                <!-- 修改确认数量 -->
+                <el-dropdown-item @click="handleChangeThreshold(scope.row)">
+                  {{ transformI18n("wallet.btnChangeThreshold") }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </template>
       </el-table-column>
     </el-table>

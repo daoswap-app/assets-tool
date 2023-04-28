@@ -2,6 +2,7 @@
 import { ref, onMounted, PropType } from "vue";
 import { transformI18n } from "@/plugins/i18n";
 import { type ConnectedWalletType } from "@/store/modules/web3Modal";
+import ArrowDownSLine from "@iconify-icons/ri/arrow-down-s-line";
 import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
 import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
 import {
@@ -294,46 +295,72 @@ const handleRevoke = (value: any) => {
     <el-table v-loading="loading" :data="tableDataQueue" style="width: 100%">
       <el-table-column type="expand">
         <template v-slot="scope">
-          <el-table :data="scope.row.events" style="width: 100%">
-            <el-table-column :label="transformI18n('transaction.eventName')">
-              <template v-slot="event">
-                <div style="display: flex; align-items: left">
-                  <span>
-                    {{
-                      event.row.eventName
-                        ? transformI18n("transaction." + event.row.eventName)
-                        : ""
-                    }}
-                  </span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column :label="transformI18n('transaction.eventFrom')">
-              <template v-slot="event">
-                <div style="display: flex; align-items: left">
-                  <span>{{ event.row.from }}</span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column
-              :label="transformI18n('transaction.eventTransactionHash')"
-            >
-              <template v-slot="event">
-                <div style="display: flex; align-items: left">
-                  <span>{{ event.row.transactionHash }}</span>
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column
-              :label="transformI18n('transaction.eventCreateTime')"
-            >
-              <template v-slot="event">
-                <div style="display: flex; align-items: left">
-                  <span>{{ event.row.createTime }}</span>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
+          <p style="word-wrap: break-word">
+            {{ transformI18n("transaction.destination") }}:
+            {{ scope.row.destination }}
+          </p>
+          <el-divider />
+          <div class="block">
+            <el-timeline v-if="scope.row.events.length > 0">
+              <el-timeline-item
+                v-for="(event, index) in scope.row.events"
+                :key="index"
+                :timestamp="event.createTime"
+                placement="top"
+              >
+                <el-card>
+                  <h4>
+                    {{ transformI18n("transaction.eventName") }}:
+                    <el-tag
+                      v-if="event.eventName == 'TransactionCreated'"
+                      type="warning"
+                    >
+                      {{
+                        event.eventName
+                          ? transformI18n("transaction." + event.eventName)
+                          : ""
+                      }}
+                    </el-tag>
+                    <el-tag
+                      v-if="event.eventName == 'TransactionConfirmed'"
+                      type="success"
+                    >
+                      {{
+                        event.eventName
+                          ? transformI18n("transaction." + event.eventName)
+                          : ""
+                      }}
+                    </el-tag>
+                    <el-tag
+                      v-if="event.eventName == 'TransactionRevoke'"
+                      type="danger"
+                    >
+                      {{
+                        event.eventName
+                          ? transformI18n("transaction." + event.eventName)
+                          : ""
+                      }}
+                    </el-tag>
+                    <el-tag v-if="event.eventName == 'TransactionExecuted'">
+                      {{
+                        event.eventName
+                          ? transformI18n("transaction." + event.eventName)
+                          : ""
+                      }}
+                    </el-tag>
+                  </h4>
+                  <p style="word-wrap: break-word">
+                    {{ transformI18n("transaction.eventFrom") }}:
+                    <span>{{ event.from }}</span>
+                  </p>
+                  <p style="word-wrap: break-word">
+                    {{ transformI18n("transaction.eventTransactionHash") }}:
+                    <span>{{ event.transactionHash }}</span>
+                  </p>
+                </el-card>
+              </el-timeline-item>
+            </el-timeline>
+          </div>
         </template>
       </el-table-column>
       <el-table-column :label="transformI18n('transaction.type')">
@@ -348,13 +375,6 @@ const handleRevoke = (value: any) => {
           </div>
         </template>
       </el-table-column>
-      <el-table-column :label="transformI18n('transaction.destination')">
-        <template v-slot="scope">
-          <div style="display: flex; align-items: left">
-            <span>{{ scope.row.destination }}</span>
-          </div>
-        </template>
-      </el-table-column>
       <el-table-column :label="transformI18n('transaction.value')">
         <template v-slot="scope">
           <div style="display: flex; align-items: left">
@@ -364,6 +384,32 @@ const handleRevoke = (value: any) => {
         </template>
       </el-table-column>
       <el-table-column :label="transformI18n('assets.operation')">
+        <template v-slot="scope">
+          <el-dropdown trigger="click">
+            <IconifyIconOffline :icon="ArrowDownSLine" class="text-[24px]" />
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  v-if="!scope.row.confirmStatus"
+                  @click="handleConfirm(scope.row)"
+                >
+                  {{ transformI18n("transaction.btnConfirm") }}
+                </el-dropdown-item>
+                <el-dropdown-item
+                  v-if="!scope.row.confirmStatus"
+                  @click="handleRevoke(scope.row)"
+                >
+                  {{ transformI18n("transaction.btnRevoke") }}
+                </el-dropdown-item>
+                <el-dropdown-item @click="handleExecute(scope.row)" divided>
+                  {{ transformI18n("transaction.btnExecute") }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </template>
+      </el-table-column>
+      <!-- <el-table-column :label="transformI18n('assets.operation')">
         <template v-slot="scope">
           <el-button
             v-if="!scope.row.confirmStatus"
@@ -389,7 +435,7 @@ const handleRevoke = (value: any) => {
             {{ transformI18n("transaction.btnRevoke") }}
           </el-button>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
   </div>
 </template>
