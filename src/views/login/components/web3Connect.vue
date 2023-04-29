@@ -30,7 +30,6 @@ async function connect() {
         }
         loading.value = false;
       });
-    loading.value = false;
   } catch (error) {
     console.error(error);
     loading.value = false;
@@ -53,8 +52,8 @@ const onLogin = async () => {
           message("登录成功", { type: "success" });
         });
       }
+      loading.value = false;
     });
-  loading.value = false;
 };
 
 /** 使用公共函数，避免`removeEventListener`失效 */

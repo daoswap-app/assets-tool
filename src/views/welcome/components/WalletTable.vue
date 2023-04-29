@@ -129,8 +129,9 @@ onMounted(() => {
                       >
                         {{ transformI18n("wallet.btnSwapOwner") }}
                       </el-dropdown-item>
-                      <!-- 添加所有者 -->
+                      <!-- 删除所有者 -->
                       <el-dropdown-item
+                        v-if="scope.row.owners.length > 1"
                         @click="handleRemoveOwner(scope.row, owner.row)"
                         divided
                       >
