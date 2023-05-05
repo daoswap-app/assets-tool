@@ -18,6 +18,7 @@ import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
 import { getContractByABI, weiToEther } from "@/utils/web3";
 import { useWalletStoreHook } from "@/store/modules/wallet";
 import { hexValue } from "@ethersproject/bytes";
+import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 
 defineOptions({
   name: "Assets"
@@ -95,9 +96,13 @@ const handleRefreshAssetList = () => {
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <span class="font-medium" style="word-wrap: break-word">{{
+          <!-- <span class="font-medium" style="word-wrap: break-word">{{
             transformI18n("assets.assets") + " - " + currentWallet
-          }}</span>
+          }}</span> -->
+          <span class="font-medium" style="word-wrap: break-word">
+            {{ transformI18n("assets.assets") }} -
+            <ButtonOfCopy :text="currentWallet" />
+          </span>
         </div>
       </template>
       <el-table v-loading="loading" :data="tableData" style="width: 100%">

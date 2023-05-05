@@ -12,6 +12,7 @@ import { useUserStoreHook } from "@/store/modules/user";
 import { useEpThemeStoreHook } from "@/store/modules/epTheme";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import { useWeb3ModalStoreHook } from "@/store/modules/web3Modal";
+import { trunc } from "@/utils/string";
 
 const errorInfo = "当前路由配置不正确，请检查配置";
 
@@ -24,7 +25,8 @@ export function useNav() {
 
   /** 用户名 */
   const username = computed(() => {
-    return useUserStoreHook()?.username;
+    // return useUserStoreHook()?.username;
+    return trunc(useWeb3ModalStoreHook().getWalletAddress, 6, 4);
   });
 
   /** 设置国际化选中后的样式 */

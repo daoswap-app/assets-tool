@@ -44,15 +44,19 @@ login:
   usernameReg: 请输入账号
   passwordReg: 请输入密码
   passwordRuleReg: 密码格式应为8-18位数字、字母、符号的任意两种组合
+tip:
+  operationSuccess: 操作成功
+  copySuccess: 复制成功
 web3:
   connect: 连接
   connectWallet: 连接钱包
-  disconnect: 断开连接
+  disconnect: 断开钱包
   noSupportChain: 不支持当前链
 account:
-  info: 账户信息
+  info: 钱包信息
   address: 地址
   balance: 余额
+  personalWalletAddress: 个人钱包地址
 assets:
   assets: 资产
   asset: 资产
@@ -114,8 +118,10 @@ wallet:
   operation: 操作
   oldOwner: 旧所有者
   newOwner: 新所有者
+  ownerAddress: 成员钱包地址
+  numberOfSigner: 多签人数
   # 按钮
-  btnAdd: 添加
+  btnAdd: 添加多签钱包
   btnSend: 发送
   btnRename: 重命名
   btnModify: 修改

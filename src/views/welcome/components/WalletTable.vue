@@ -11,6 +11,7 @@ import AddOwner from "@/components/Wallet/AddOwner.vue";
 import SwapOwner from "@/components/Wallet/SwapOwner.vue";
 import RemoveOwner from "@/components/Wallet/RemoveOwner.vue";
 import ArrowDownSLine from "@iconify-icons/ri/arrow-down-s-line";
+import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 
 defineOptions({
   name: "WalletTable"
@@ -107,10 +108,13 @@ onMounted(() => {
       <el-table-column type="expand">
         <template v-slot="scope">
           <el-table :data="scope.row.owners" stripe style="width: 100%">
-            <el-table-column :label="transformI18n('wallet.address')">
+            <el-table-column :label="transformI18n('wallet.ownerAddress')">
               <template v-slot="owner">
                 <div style="display: flex; align-items: left">
-                  <span>{{ owner.row }}</span>
+                  <!-- <span>{{ owner.row }}</span> -->
+                  <span>
+                    <ButtonOfCopy :text="owner.row" />
+                  </span>
                 </div>
               </template>
             </el-table-column>
@@ -148,7 +152,10 @@ onMounted(() => {
       <el-table-column :label="transformI18n('wallet.address')">
         <template v-slot="scope">
           <div style="display: flex; align-items: left">
-            <span>{{ scope.row.token }}</span>
+            <!-- <span>{{ scope.row.token }}</span> -->
+            <span>
+              <ButtonOfCopy :text="scope.row.token" />
+            </span>
           </div>
         </template>
       </el-table-column>
@@ -159,13 +166,7 @@ onMounted(() => {
           </div>
         </template>
       </el-table-column>
-      <el-table-column
-        :label="
-          transformI18n('wallet.confirmNumber') +
-          '/' +
-          transformI18n('wallet.ownerCount')
-        "
-      >
+      <el-table-column :label="transformI18n('wallet.numberOfSigner')">
         <template v-slot="scope">
           <div style="display: flex; align-items: left">
             <span>

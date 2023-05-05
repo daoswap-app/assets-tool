@@ -98,7 +98,8 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
                 :icon="LogoutCircleRLine"
                 style="margin: 5px"
               />
-              {{ t("buttons.hsLoginOut") }}
+              <!-- {{ t("buttons.hsLoginOut") }} -->
+              {{ t("web3.disconnect") }}
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>

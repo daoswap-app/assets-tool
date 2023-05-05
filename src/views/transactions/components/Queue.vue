@@ -7,13 +7,13 @@ import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
 import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
 import {
   EventFromBlock,
-  EventMaxQueryNumber,
   TOKEN_LIST,
   type TokenListType
 } from "@/config/constants";
 import { getContractByABI, weiToEther } from "@/utils/web3";
 import { compare } from "@/utils/array";
 import { parseTime } from "@/utils/date";
+import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 import { getChainInfo } from "@/config/chains";
 import { hexValue } from "@ethersproject/bytes";
 
@@ -46,8 +46,6 @@ const tableDataQueue = ref([]);
 const chainInfo = ref(null);
 
 const fromBlock = ref<number>(0); // EventFromBlock[chainId.value];
-const block = ref<number>(0); // await library.value.eth.getBlock("latest");
-const blockMod = ref<number>(0); // Math.ceil(diffBlock / 5000);
 
 // 方法
 const getTransactionList = async () => {
@@ -60,10 +58,6 @@ const getTransactionList = async () => {
   );
   // 获取block数据
   fromBlock.value = EventFromBlock[props.connectedWallet.chainId];
-  block.value = await props.web3.eth.getBlockNumber();
-  blockMod.value = Math.ceil(
-    (block.value - fromBlock.value) / EventMaxQueryNumber
-  );
 
   // 重置数据
   tableDataQueue.value = [];
@@ -71,6 +65,14 @@ const getTransactionList = async () => {
   const transactionPendingIds = await contract.methods
     .getTransactionIds(0)
     .call();
+  // 获取日志记录
+  const allEvents = await contract.getPastEvents("allEvents", {
+    filter: {
+      transactionId: transactionPendingIds
+    },
+    fromBlock: fromBlock.value,
+    toBlock: "latest"
+  });
   // 查询交易详情
   const getResultForPending = transactionPendingIds.map(async (id: string) => {
     const transaction = await contract.methods.getTransaction(id).call();
@@ -140,65 +142,37 @@ const getTransactionList = async () => {
       methodName: methodName,
       events: []
     };
-    // 查询日志信息
-    for (let index = 0; index < blockMod.value; index++) {
-      const currentFromBlock = fromBlock.value + EventMaxQueryNumber * index;
-      const toBlock = currentFromBlock + (EventMaxQueryNumber - 1);
-      const eventsOfTransactionCreated = await contract.getPastEvents(
-        "TransactionCreated",
-        {
-          filter: {
-            transactionId: id
-          },
-          fromBlock: currentFromBlock,
-          toBlock: toBlock
-        }
-      );
-      const eventsOfTransactionConfirmed = await contract.getPastEvents(
-        "TransactionConfirmed",
-        {
-          filter: {
-            transactionId: id
-          },
-          fromBlock: currentFromBlock,
-          toBlock: toBlock
-        }
-      );
-      const eventsOfTransactionRevoke = await contract.getPastEvents(
-        "TransactionRevoke",
-        {
-          filter: {
-            transactionId: id
-          },
-          fromBlock: currentFromBlock,
-          toBlock: toBlock
-        }
-      );
-      const events = eventsOfTransactionCreated.concat(
-        eventsOfTransactionConfirmed,
-        eventsOfTransactionRevoke
-      );
-      if (events.length > 0) {
-        const getResultForEvent = events.map(async (event: any) => {
-          const txDetail = await props.web3.eth.getTransaction(
-            event.transactionHash
-          );
-          const eventItem = {
-            eventName: event.event,
-            ...event.returnValues,
-            ...{
-              transactionHash: event.transactionHash,
-              blockNumber: event.blockNumber,
-              from: txDetail.from,
-              createTime: parseTime(event.returnValues.createTime)
-            }
-          };
-          tempItem.events.push(eventItem);
-        });
-        await Promise.all(getResultForEvent);
-        tempItem.events.sort(compare("blockNumber"));
+
+    // 过滤日志
+    const events = await allEvents.filter((item: any) => {
+      if (
+        item.returnValues.transactionId &&
+        item.returnValues.transactionId == id
+      ) {
+        return item;
       }
+    });
+    if (events.length > 0) {
+      const getResultForEvent = events.map(async (event: any) => {
+        const txDetail = await props.web3.eth.getTransaction(
+          event.transactionHash
+        );
+        const eventItem = {
+          eventName: event.event,
+          ...event.returnValues,
+          ...{
+            transactionHash: event.transactionHash,
+            blockNumber: event.blockNumber,
+            from: txDetail.from,
+            createTime: parseTime(event.returnValues.createTime)
+          }
+        };
+        tempItem.events.push(eventItem);
+      });
+      await Promise.all(getResultForEvent);
+      tempItem.events.sort(compare("blockNumber"));
     }
+
     tableDataQueue.value.push(tempItem);
   });
   await Promise.all(getResultForPending);
@@ -297,7 +271,8 @@ const handleRevoke = (value: any) => {
         <template v-slot="scope">
           <p style="word-wrap: break-word">
             {{ transformI18n("transaction.destination") }}:
-            {{ scope.row.destination }}
+            <ButtonOfCopy :text="scope.row.destination" />
+            <!-- {{ scope.row.destination }} -->
           </p>
           <el-divider />
           <div class="block">

@@ -8,6 +8,7 @@ import {
 import { formatVisualAmount } from "@/utils/formatters";
 import { getChainInfo } from "@/config/chains";
 import { hexValue } from "@ethersproject/bytes";
+import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 
 defineOptions({
   name: "HomeBalance"
@@ -66,8 +67,8 @@ onMounted(() => {
         </div>
       </template>
       <p style="word-wrap: break-word">
-        {{ transformI18n("account.address") }}:
-        {{ connectedWallet?.address ?? "" }}
+        {{ transformI18n("account.personalWalletAddress") }}:
+        <ButtonOfCopy :text="connectedWallet?.address ?? ''" />
       </p>
       <br />
       <p style="word-wrap: break-word">

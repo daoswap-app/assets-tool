@@ -10,6 +10,7 @@ import {
 
 import Queue from "./components/Queue.vue";
 import History from "./components/History.vue";
+import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 
 defineOptions({
   name: "Transactions"
@@ -40,9 +41,13 @@ function tabClick({ index }) {
     <el-card shadow="never">
       <template #header>
         <div class="card-header">
-          <span class="font-medium" style="word-wrap: break-word">{{
+          <!-- <span class="font-medium" style="word-wrap: break-word">{{
             transformI18n("transaction.transactions") + " - " + currentWallet
-          }}</span>
+          }}</span> -->
+          <span class="font-medium" style="word-wrap: break-word">
+            {{ transformI18n("transaction.transactions") }} -
+            <ButtonOfCopy :text="currentWallet" />
+          </span>
         </div>
       </template>
 

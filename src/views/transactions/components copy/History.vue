@@ -13,7 +13,6 @@ import {
 import { getContractByABI, weiToEther } from "@/utils/web3";
 import { compare } from "@/utils/array";
 import { parseTime } from "@/utils/date";
-import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 import { getChainInfo } from "@/config/chains";
 import { hexValue } from "@ethersproject/bytes";
 
@@ -75,14 +74,6 @@ const getTransactionList = async () => {
     .getTransactionIds(2)
     .call();
   const transactionIds = transactionApprovedIds.concat(transactionRevokeIds);
-  // 获取日志记录
-  const allEvents = await contract.getPastEvents("allEvents", {
-    filter: {
-      transactionId: transactionIds
-    },
-    fromBlock: fromBlock.value,
-    toBlock: "latest"
-  });
   const getResults = transactionIds.map(async (id: string) => {
     const transaction = await contract.methods.getTransaction(id).call();
     const transactionConfirmationStatus = await contract.methods
@@ -151,37 +142,76 @@ const getTransactionList = async () => {
       methodName: methodName,
       events: []
     };
-
-    // 过滤日志
-    const events = await allEvents.filter((item: any) => {
-      if (
-        item.returnValues.transactionId &&
-        item.returnValues.transactionId == id
-      ) {
-        return item;
+    // 查询日志信息
+    for (let index = 0; index < blockMod.value; index++) {
+      const currentFromBlock = fromBlock.value + EventMaxQueryNumber * index;
+      const toBlock = currentFromBlock + (EventMaxQueryNumber - 1);
+      const eventsOfTransactionCreated = await contract.getPastEvents(
+        "TransactionCreated",
+        {
+          filter: {
+            transactionId: id
+          },
+          fromBlock: currentFromBlock,
+          toBlock: toBlock
+        }
+      );
+      const eventsOfTransactionConfirmed = await contract.getPastEvents(
+        "TransactionConfirmed",
+        {
+          filter: {
+            transactionId: id
+          },
+          fromBlock: currentFromBlock,
+          toBlock: toBlock
+        }
+      );
+      const eventsOfTransactionRevoke = await contract.getPastEvents(
+        "TransactionRevoke",
+        {
+          filter: {
+            transactionId: id
+          },
+          fromBlock: currentFromBlock,
+          toBlock: toBlock
+        }
+      );
+      const eventsOfTransactionExecuted = await contract.getPastEvents(
+        "TransactionExecuted",
+        {
+          filter: {
+            transactionId: id
+          },
+          fromBlock: currentFromBlock,
+          toBlock: toBlock
+        }
+      );
+      const events = eventsOfTransactionCreated.concat(
+        eventsOfTransactionConfirmed,
+        eventsOfTransactionRevoke,
+        eventsOfTransactionExecuted
+      );
+      if (events.length > 0) {
+        const getResultForEvent = events.map(async (event: any) => {
+          const txDetail = await props.web3.eth.getTransaction(
+            event.transactionHash
+          );
+          const eventItem = {
+            eventName: event.event,
+            ...event.returnValues,
+            ...{
+              transactionHash: event.transactionHash,
+              blockNumber: event.blockNumber,
+              from: txDetail.from,
+              createTime: parseTime(event.returnValues.createTime)
+            }
+          };
+          tempItem.events.push(eventItem);
+        });
+        await Promise.all(getResultForEvent);
+        tempItem.events.sort(compare("blockNumber"));
       }
-    });
-    if (events.length > 0) {
-      const getResultForEvent = events.map(async (event: any) => {
-        const txDetail = await props.web3.eth.getTransaction(
-          event.transactionHash
-        );
-        const eventItem = {
-          eventName: event.event,
-          ...event.returnValues,
-          ...{
-            transactionHash: event.transactionHash,
-            blockNumber: event.blockNumber,
-            from: txDetail.from,
-            createTime: parseTime(event.returnValues.createTime)
-          }
-        };
-        tempItem.events.push(eventItem);
-      });
-      await Promise.all(getResultForEvent);
-      tempItem.events.sort(compare("blockNumber"));
     }
-
     tableDataHistory.value.push(tempItem);
   });
   await Promise.all(getResults);
@@ -204,8 +234,7 @@ onMounted(() => {
         <template v-slot="scope">
           <p style="word-wrap: break-word">
             {{ transformI18n("transaction.destination") }}:
-            <ButtonOfCopy :text="scope.row.destination" />
-            <!-- {{ scope.row.destination }} -->
+            {{ scope.row.destination }}
           </p>
           <el-divider />
           <div class="block">

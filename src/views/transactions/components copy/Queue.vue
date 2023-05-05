@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, PropType } from "vue";
 import { transformI18n } from "@/plugins/i18n";
 import { type ConnectedWalletType } from "@/store/modules/web3Modal";
+import ArrowDownSLine from "@iconify-icons/ri/arrow-down-s-line";
 import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
 import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
 import {
@@ -13,7 +14,6 @@ import {
 import { getContractByABI, weiToEther } from "@/utils/web3";
 import { compare } from "@/utils/array";
 import { parseTime } from "@/utils/date";
-import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 import { getChainInfo } from "@/config/chains";
 import { hexValue } from "@ethersproject/bytes";
 
@@ -22,7 +22,7 @@ const decoderForERC20 = new InputDataDecoder(ERC20_ABI);
 const decoderForWallet = new InputDataDecoder(MultiSigWallet_ABI);
 
 defineOptions({
-  name: "TransactionsHistory"
+  name: "TransactionsQueue"
 });
 
 const props = defineProps({
@@ -42,7 +42,7 @@ const props = defineProps({
 
 // 变量
 const loading = ref<boolean>(false);
-const tableDataHistory = ref([]);
+const tableDataQueue = ref([]);
 const chainInfo = ref(null);
 
 const fromBlock = ref<number>(0); // EventFromBlock[chainId.value];
@@ -66,24 +66,20 @@ const getTransactionList = async () => {
   );
 
   // 重置数据
-  tableDataHistory.value = [];
-  // 获取交易记录，已执行交易
-  const transactionApprovedIds = await contract.methods
-    .getTransactionIds(1)
+  tableDataQueue.value = [];
+  // 获取交易Ids
+  const transactionPendingIds = await contract.methods
+    .getTransactionIds(0)
     .call();
-  const transactionRevokeIds = await contract.methods
-    .getTransactionIds(2)
-    .call();
-  const transactionIds = transactionApprovedIds.concat(transactionRevokeIds);
-  // 获取日志记录
   const allEvents = await contract.getPastEvents("allEvents", {
     filter: {
-      transactionId: transactionIds
+      transactionId: transactionPendingIds
     },
     fromBlock: fromBlock.value,
     toBlock: "latest"
   });
-  const getResults = transactionIds.map(async (id: string) => {
+  // 查询交易详情
+  const getResultForPending = transactionPendingIds.map(async (id: string) => {
     const transaction = await contract.methods.getTransaction(id).call();
     const transactionConfirmationStatus = await contract.methods
       .getTransactionConfirmationStatus(id, props.connectedWallet.address)
@@ -161,6 +157,16 @@ const getTransactionList = async () => {
         return item;
       }
     });
+    console.info(events);
+
+    // const events = await contract.getPastEvents("allEvents", {
+    //   filter: {
+    //     transactionId: id
+    //   },
+    //   fromBlock: fromBlock.value,
+    //   toBlock: "latest"
+    // });
+    // console.info(events);
     if (events.length > 0) {
       const getResultForEvent = events.map(async (event: any) => {
         const txDetail = await props.web3.eth.getTransaction(
@@ -182,10 +188,69 @@ const getTransactionList = async () => {
       tempItem.events.sort(compare("blockNumber"));
     }
 
-    tableDataHistory.value.push(tempItem);
+    // // 查询日志信息
+    // for (let index = 0; index < blockMod.value; index++) {
+    //   const currentFromBlock = fromBlock.value + EventMaxQueryNumber * index;
+    //   const toBlock = currentFromBlock + (EventMaxQueryNumber - 1);
+    //   const eventsOfTransactionCreated = await contract.getPastEvents(
+    //     "TransactionCreated",
+    //     {
+    //       filter: {
+    //         transactionId: id
+    //       },
+    //       fromBlock: currentFromBlock,
+    //       toBlock: toBlock
+    //     }
+    //   );
+    //   const eventsOfTransactionConfirmed = await contract.getPastEvents(
+    //     "TransactionConfirmed",
+    //     {
+    //       filter: {
+    //         transactionId: id
+    //       },
+    //       fromBlock: currentFromBlock,
+    //       toBlock: toBlock
+    //     }
+    //   );
+    //   const eventsOfTransactionRevoke = await contract.getPastEvents(
+    //     "TransactionRevoke",
+    //     {
+    //       filter: {
+    //         transactionId: id
+    //       },
+    //       fromBlock: currentFromBlock,
+    //       toBlock: toBlock
+    //     }
+    //   );
+    //   const events = eventsOfTransactionCreated.concat(
+    //     eventsOfTransactionConfirmed,
+    //     eventsOfTransactionRevoke
+    //   );
+    //   if (events.length > 0) {
+    //     const getResultForEvent = events.map(async (event: any) => {
+    //       const txDetail = await props.web3.eth.getTransaction(
+    //         event.transactionHash
+    //       );
+    //       const eventItem = {
+    //         eventName: event.event,
+    //         ...event.returnValues,
+    //         ...{
+    //           transactionHash: event.transactionHash,
+    //           blockNumber: event.blockNumber,
+    //           from: txDetail.from,
+    //           createTime: parseTime(event.returnValues.createTime)
+    //         }
+    //       };
+    //       tempItem.events.push(eventItem);
+    //     });
+    //     await Promise.all(getResultForEvent);
+    //     tempItem.events.sort(compare("blockNumber"));
+    //   }
+    // }
+    tableDataQueue.value.push(tempItem);
   });
-  await Promise.all(getResults);
-  tableDataHistory.value.sort(compare("id"));
+  await Promise.all(getResultForPending);
+  tableDataQueue.value.sort(compare("id"));
 
   loading.value = false;
 };
@@ -195,17 +260,92 @@ onMounted(() => {
     getTransactionList();
   }
 });
+
+// 确认交易
+const handleConfirm = (value: any) => {
+  loading.value = true;
+  // 调用合约
+  const contract = getContractByABI(
+    MultiSigWallet_ABI,
+    props.currentWallet,
+    props.web3
+  );
+  // 发送交易，BNB
+  contract.methods
+    .confirmTransaction(value.id)
+    .send({
+      from: props.connectedWallet.address
+    })
+    .then(async () => {
+      await getTransactionList();
+    })
+    .catch((e: any) => {
+      console.error(e);
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
+// 执行交易
+const handleExecute = (value: any) => {
+  loading.value = true;
+  // 调用合约
+  const contract = getContractByABI(
+    MultiSigWallet_ABI,
+    props.currentWallet,
+    props.web3
+  );
+  // 发送交易，BNB
+  contract.methods
+    .executeTransaction(value.id)
+    .send({
+      from: props.connectedWallet.address
+    })
+    .then(async () => {
+      await getTransactionList();
+    })
+    .catch((e: any) => {
+      console.error(e);
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
+// 驳回交易
+const handleRevoke = (value: any) => {
+  loading.value = true;
+  // 调用合约
+  const contract = getContractByABI(
+    MultiSigWallet_ABI,
+    props.currentWallet,
+    props.web3
+  );
+  // 发送交易，BNB
+  contract.methods
+    .revokeTransaction(value.id)
+    .send({
+      from: props.connectedWallet.address
+    })
+    .then(async () => {
+      await getTransactionList();
+    })
+    .catch((e: any) => {
+      console.error(e);
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
 </script>
 
 <template>
   <div>
-    <el-table v-loading="loading" :data="tableDataHistory" style="width: 100%">
+    <el-table v-loading="loading" :data="tableDataQueue" style="width: 100%">
       <el-table-column type="expand">
         <template v-slot="scope">
           <p style="word-wrap: break-word">
             {{ transformI18n("transaction.destination") }}:
-            <ButtonOfCopy :text="scope.row.destination" />
-            <!-- {{ scope.row.destination }} -->
+            {{ scope.row.destination }}
           </p>
           <el-divider />
           <div class="block">
@@ -291,18 +431,59 @@ onMounted(() => {
           </div>
         </template>
       </el-table-column>
-      <el-table-column :label="transformI18n('transaction.status')">
+      <el-table-column :label="transformI18n('assets.operation')">
         <template v-slot="scope">
-          <div style="display: flex; align-items: left">
-            <el-tag v-if="scope.row.executeState == 1" type="success">
-              {{ transformI18n("transaction.statusSuccess") }}
-            </el-tag>
-            <el-tag v-if="scope.row.executeState == 2" type="danger">
-              {{ transformI18n("transaction.statusRevoke") }}
-            </el-tag>
-          </div>
+          <el-dropdown trigger="click">
+            <IconifyIconOffline :icon="ArrowDownSLine" class="text-[24px]" />
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  v-if="!scope.row.confirmStatus"
+                  @click="handleConfirm(scope.row)"
+                >
+                  {{ transformI18n("transaction.btnConfirm") }}
+                </el-dropdown-item>
+                <el-dropdown-item
+                  v-if="!scope.row.confirmStatus"
+                  @click="handleRevoke(scope.row)"
+                >
+                  {{ transformI18n("transaction.btnRevoke") }}
+                </el-dropdown-item>
+                <el-dropdown-item @click="handleExecute(scope.row)" divided>
+                  {{ transformI18n("transaction.btnExecute") }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </template>
       </el-table-column>
+      <!-- <el-table-column :label="transformI18n('assets.operation')">
+        <template v-slot="scope">
+          <el-button
+            v-if="!scope.row.confirmStatus"
+            type="primary"
+            size="small"
+            @click="handleConfirm(scope.row)"
+          >
+            {{ transformI18n("transaction.btnConfirm") }}
+          </el-button>
+          <el-button
+            type="primary"
+            size="small"
+            @click="handleExecute(scope.row)"
+          >
+            {{ transformI18n("transaction.btnExecute") }}
+          </el-button>
+          <el-button
+            v-if="!scope.row.confirmStatus"
+            type="danger"
+            size="small"
+            @click="handleRevoke(scope.row)"
+          >
+            {{ transformI18n("transaction.btnRevoke") }}
+          </el-button>
+        </template>
+      </el-table-column> -->
     </el-table>
   </div>
 </template>

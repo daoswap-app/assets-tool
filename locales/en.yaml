@@ -44,6 +44,9 @@ login:
   usernameReg: Please enter username
   passwordReg: Please enter password
   passwordRuleReg: The password format should be any combination of 8-18 digits
+tip:
+  operationSuccess: Operation Success
+  copySuccess: Copy Success
 # web3
 web3:
   connect: Connect
@@ -51,9 +54,10 @@ web3:
   disconnect: Disconnect
   noSupportChain: No Support Chain
 account:
-  info: Account Info
+  info: Wallet Info
   address: address
-  balance: balance
+  balance: Balance
+  personalWalletAddress: Personal wallet address
 assets:
   assets: Assets
   asset: Asset
@@ -115,8 +119,10 @@ wallet:
   operation: Operation
   oldOwner: Old Owner
   newOwner: New Owner
+  ownerAddress: Owner Wallet Address
+  numberOfSigner: Number of signer
   # 按钮
-  btnAdd: Add
+  btnAdd: Add Multi-Sig Wallet
   btnSend: Send
   btnRename: Rename
   btnModify: Modify
