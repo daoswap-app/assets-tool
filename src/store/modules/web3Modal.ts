@@ -124,9 +124,9 @@ const useWeb3ModalStore = defineStore({
     },
     /** 断开连接 */
     async disconnectWallet() {
-      if (this.web3 && this.web3.currentProvider) {
-        await this.web3.setProvider(null);
-      }
+      // if (this.web3 && this.web3.currentProvider) {
+      //   await this.web3.setProvider(null);
+      // }
     }
   }
 });
