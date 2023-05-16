@@ -3,7 +3,8 @@ import { ref, onMounted } from "vue";
 import { transformI18n } from "@/plugins/i18n";
 import {
   useWeb3ModalStoreHook,
-  type Web3Type
+  type Web3Type,
+  type ConnectedWalletType
 } from "@/store/modules/web3Modal";
 // import { formatVisualAmount } from "@/utils/formatters";
 import SendTransaction from "@/components/Wallet/SendTransaction.vue";
@@ -15,6 +16,8 @@ import {
 } from "@/config/constants";
 import { getChainInfo } from "@/config/chains";
 import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
+import Wallet_ABI from "@/assets/abi/Wallet_abi.json";
+import { WALLET_CONTRACT_ADDRESSES } from "@/config/constants";
 import { getContractByABI, weiToEther } from "@/utils/web3";
 import { useWalletStoreHook } from "@/store/modules/wallet";
 import { hexValue } from "@ethersproject/bytes";
@@ -30,6 +33,7 @@ const tokenList = ref<string[]>([]);
 const loading = ref<boolean>(false);
 const web3 = ref<Web3Type | null>(null);
 const currentWallet = ref<string | null>(null);
+const connectedWallet = ref<ConnectedWalletType>(null);
 const tableData = ref<AssetItem[]>([]);
 
 const formDialogVisible = ref(false);
@@ -39,13 +43,40 @@ const chainInfo = ref(null);
 // 方法
 async function getWeb3() {
   currentWallet.value = useWalletStoreHook().getWallet;
+  connectedWallet.value = useWeb3ModalStoreHook().getWallet;
   web3.value = useWeb3ModalStoreHook().getWeb3;
+
+  try {
+    // 查询钱包列表
+    const contractWallet = getContractByABI(
+      Wallet_ABI,
+      WALLET_CONTRACT_ADDRESSES[connectedWallet.value.chainId],
+      web3.value
+    );
+    const myWalletList = await contractWallet.methods.getWalletList().call({
+      from: connectedWallet.value.address
+    });
+    if (myWalletList.length > 0) {
+      if (!currentWallet.value) {
+        useWalletStoreHook().setDefaultWallet(myWalletList[0].token);
+        currentWallet.value = myWalletList[0].token;
+      }
+    } else {
+      useWalletStoreHook().removeDefaultWallet();
+      currentWallet.value = null;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+
   // 获取token列表
-  const chainId = await web3.value.eth.getChainId();
-  TOKEN_LIST[chainId].map((item: TokenListType) => {
+  tokenList.value = [];
+  TOKEN_LIST[connectedWallet.value.chainId].map((item: TokenListType) => {
     tokenList.value.push(item.token);
   });
-  chainInfo.value = getChainInfo(hexValue(parseInt(chainId)));
+  chainInfo.value = getChainInfo(
+    hexValue(parseInt(connectedWallet.value.chainId))
+  );
 }
 // 查询资产列表
 const getAssets = async () => {
@@ -70,15 +101,19 @@ const getAssets = async () => {
         token: token,
         balance: weiToEther(balanceValue, web3.value) // formatVisualAmount(balanceValue, decimals)
       };
-      tableData.value.push(item);
+      const filterTable = tableData.value.filter(
+        (item: AssetItem) => item.token == token
+      );
+      if (filterTable.length <= 0) {
+        tableData.value.push(item);
+      }
     });
     await Promise.all(getResult);
   }
   loading.value = false;
 };
 onMounted(() => {
-  getWeb3();
-  getAssets();
+  getWeb3().then(() => getAssets());
 });
 
 const handleSend = (row: any) => {
@@ -89,6 +124,11 @@ const handleSend = (row: any) => {
 const handleRefreshAssetList = () => {
   getAssets();
 };
+
+// 监听钱包
+useWeb3ModalStoreHook().$subscribe(() => {
+  getWeb3().then(() => getAssets());
+});
 </script>
 
 <template>
