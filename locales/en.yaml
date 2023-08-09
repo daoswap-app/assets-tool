@@ -109,6 +109,12 @@ transaction:
   TransactionConfirmed: Confirmed
   TransactionRevoke: Revoke
   TransactionExecuted: Executed
+  # 参数名
+  ParamsAddOwner: Add Owner
+  ParamsThreshold: Threshold
+  ParamsRemoveOwner: Remove Owner
+  ParamsOldOwner: Old Owner
+  ParamsNewOwner: New Owner
 wallet:
   name: Name
   address: Wallet Address

@@ -6,8 +6,7 @@ import {
   type ConnectedWalletType
 } from "@/store/modules/web3Modal";
 import { formatVisualAmount } from "@/utils/formatters";
-import { getChainInfo } from "@/config/chains";
-import { hexValue } from "@ethersproject/bytes";
+import { getChainInfoByChainId } from "@/config/chains";
 import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 
 defineOptions({
@@ -39,7 +38,7 @@ async function loadData() {
   web3.value = props.web3;
   if (web3.value) {
     const chainId = await web3.value.eth.getChainId();
-    chainInfo.value = getChainInfo(hexValue(parseInt(chainId)));
+    chainInfo.value = getChainInfoByChainId(chainId);
     const balanceValue = await web3.value.eth.getBalance(
       connectedWallet.value.address
     );

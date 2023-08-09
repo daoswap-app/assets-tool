@@ -1,29 +1,30 @@
 import type { Chain, ChainWithDecimalId } from "@web3-onboard/common";
+import { hexValue } from "@ethersproject/bytes";
 
 export const defaultRpcUrl = "https://bsc-dataseed3.defibit.io";
 
 export const chains: (Chain | ChainWithDecimalId)[] = [
   {
-    id: "0x1691",
+    id: "0x539",
     namespace: "evm",
     token: "ETH",
     label: "Localhost",
-    rpcUrl: "http://127.0.0.1:8545",
+    rpcUrl: "http://127.0.0.1:7545",
     color: "blue",
-    publicRpcUrl: "http://127.0.0.1:8545",
+    publicRpcUrl: "http://127.0.0.1:7545",
     blockExplorerUrl: "https://bscscan.com"
   },
-  // {
-  //   id: "0x38",
-  //   namespace: "evm",
-  //   token: "BNB",
-  //   label: "BSC Mainnet",
-  //   rpcUrl: "https://bsc-dataseed3.defibit.io",
-  //   color: "yellow",
-  //   // icon: "https://tokenlists.daoswap.cc/daoswap.svg",
-  //   publicRpcUrl: "https://bsc-dataseed3.defibit.io",
-  //   blockExplorerUrl: "https://bscscan.com"
-  // },
+  {
+    id: "0x38",
+    namespace: "evm",
+    token: "BNB",
+    label: "BSC Mainnet",
+    rpcUrl: "https://bsc-dataseed3.defibit.io",
+    color: "yellow",
+    // icon: "https://tokenlists.daoswap.cc/daoswap.svg",
+    publicRpcUrl: "https://bsc-dataseed3.defibit.io",
+    blockExplorerUrl: "https://bscscan.com"
+  },
   {
     id: "0x61",
     namespace: "evm",
@@ -44,8 +45,14 @@ export function getChainInfo(chainId: string): Chain | ChainWithDecimalId {
   return list ? list[0] : null;
 }
 
+export function getChainInfoByChainId(
+  chainId: string | number
+): Chain | ChainWithDecimalId {
+  return getChainInfo(hexValue(parseInt(chainId)));
+}
+
 export const chainIds: Record<string, string> = {
-  localhost: "5777",
+  localhost: "1337",
   "420": "2020",
   eth: "1",
   exp: "2",

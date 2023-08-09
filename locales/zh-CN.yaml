@@ -108,6 +108,12 @@ transaction:
   TransactionConfirmed: 确认
   TransactionRevoke: 驳回
   TransactionExecuted: 执行
+  # 参数名
+  ParamsAddOwner: 添加钱包地址
+  ParamsThreshold: 确认人数
+  ParamsRemoveOwner: 移除钱包地址
+  ParamsOldOwner: 旧钱包地址
+  ParamsNewOwner: 新钱包地址
 wallet:
   name: 名称
   address: 钱包地址

@@ -4,22 +4,16 @@ import { transformI18n } from "@/plugins/i18n";
 import { type ConnectedWalletType } from "@/store/modules/web3Modal";
 import ArrowDownSLine from "@iconify-icons/ri/arrow-down-s-line";
 import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
-import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
-import {
-  EventFromBlock,
-  TOKEN_LIST,
-  type TokenListType
-} from "@/config/constants";
-import { getContractByABI, weiToEther } from "@/utils/web3";
+import { EventFromBlock, TransactionType } from "@/config/constants";
+import { getContractByABI } from "@/utils/web3";
 import { compare } from "@/utils/array";
 import { parseTime } from "@/utils/date";
 import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
-import { getChainInfo } from "@/config/chains";
-import { hexValue } from "@ethersproject/bytes";
-
-import InputDataDecoder from "ethereum-input-data-decoder";
-const decoderForERC20 = new InputDataDecoder(ERC20_ABI);
-const decoderForWallet = new InputDataDecoder(MultiSigWallet_ABI);
+import { getChainInfoByChainId } from "@/config/chains";
+import {
+  decodeParamsForTransfer,
+  decodeParamsForOperation
+} from "../utils/decodeParams";
 
 defineOptions({
   name: "TransactionsQueue"
@@ -81,67 +75,35 @@ const getTransactionList = async () => {
       .call();
     // 当前chain信息
     const chainId = await props.web3.eth.getChainId();
-    chainInfo.value = getChainInfo(hexValue(parseInt(chainId)));
-    // 处理交易数据，1-转账，2-操作
-    let type = 1;
-    let methodName = "";
-    let tokenSymbol = "";
-    let destination = transaction.to;
-    let value = null;
-    let data = null;
-    // 目标地址等于钱包地址为操作，其它为转账
-    if (transaction.to.toLowerCase() === props.currentWallet.toLowerCase()) {
-      type = 2;
-      const transactionData = transaction.data
-        ? decoderForWallet.decodeData(transaction.data)
-        : null;
-      if (transactionData) {
-        methodName = transactionData.method;
-      }
-    } else {
-      type = 1;
-      const transactionData = transaction.data
-        ? decoderForERC20.decodeData(transaction.data)
-        : null;
-      tokenSymbol = chainInfo.value.token;
-      value = weiToEther(transaction.value, props.web3);
-      if (transactionData) {
-        const tokenList = TOKEN_LIST[chainId].filter(
-          (item: TokenListType) =>
-            item.token.toLowerCase() === transaction.to.toLowerCase()
-        );
-        methodName = transactionData.method;
-        tokenSymbol =
-          tokenList.length > 0 ? tokenList[0].symbol : chainInfo.value.token;
-        destination = transactionData.inputs[0];
-        value = weiToEther(
-          new props.web3.utils.toBN(transactionData.inputs[1].toString()),
-          props.web3
-        );
-        data = {
-          to: transactionData.inputs[0],
-          value: weiToEther(
-            new props.web3.utils.toBN(transactionData.inputs[1].toString()),
-            props.web3
-          )
-        };
-      }
-    }
-
-    const tempItem = {
+    chainInfo.value = getChainInfoByChainId(chainId);
+    // 组装单笔交易的数据
+    const defaultItemData = {
       id: id,
-      destination: destination,
-      tokenSymbol: tokenSymbol,
-      value: value,
-      data: data,
+      destination: transaction.to,
+      tokenSymbol: "",
+      value: null,
+      data: null,
       confirmations: transaction.confirmations,
       revokes: transaction.revokes,
       executeState: transaction.state,
       confirmStatus: transactionConfirmationStatus,
-      type: type,
-      methodName: methodName,
+      type: 1, // 处理交易数据，1-转账，2-操作
+      methodName: "",
       events: []
     };
+    let returnData = null;
+    // 目标地址等于钱包地址为操作，其它为转账
+    if (transaction.to.toLowerCase() === props.currentWallet.toLowerCase()) {
+      returnData = decodeParamsForOperation(transaction);
+    } else {
+      returnData = decodeParamsForTransfer(
+        transaction,
+        chainInfo.value,
+        props.web3
+      );
+    }
+    // 合并数据
+    const tempItem = { ...defaultItemData, ...returnData };
 
     // 过滤日志
     const events = await allEvents.filter((item: any) => {
@@ -272,8 +234,17 @@ const handleRevoke = (value: any) => {
           <p style="word-wrap: break-word">
             {{ transformI18n("transaction.destination") }}:
             <ButtonOfCopy :text="scope.row.destination" />
-            <!-- {{ scope.row.destination }} -->
           </p>
+          <div v-if="scope.row.type == 2">
+            <p
+              style="word-wrap: break-word"
+              v-for="(dataInfo, index) in scope.row.data"
+              :key="index"
+            >
+              {{ transformI18n("transaction." + dataInfo.name) }}:
+              {{ dataInfo.value }}
+            </p>
+          </div>
           <el-divider />
           <div class="block">
             <el-timeline v-if="scope.row.events.length > 0">
@@ -286,40 +257,13 @@ const handleRevoke = (value: any) => {
                 <el-card>
                   <h4>
                     {{ transformI18n("transaction.eventName") }}:
-                    <el-tag
-                      v-if="event.eventName == 'TransactionCreated'"
-                      type="warning"
-                    >
+                    <el-tag :type="TransactionType[event.eventName].tagType">
                       {{
-                        event.eventName
-                          ? transformI18n("transaction." + event.eventName)
-                          : ""
-                      }}
-                    </el-tag>
-                    <el-tag
-                      v-if="event.eventName == 'TransactionConfirmed'"
-                      type="success"
-                    >
-                      {{
-                        event.eventName
-                          ? transformI18n("transaction." + event.eventName)
-                          : ""
-                      }}
-                    </el-tag>
-                    <el-tag
-                      v-if="event.eventName == 'TransactionRevoke'"
-                      type="danger"
-                    >
-                      {{
-                        event.eventName
-                          ? transformI18n("transaction." + event.eventName)
-                          : ""
-                      }}
-                    </el-tag>
-                    <el-tag v-if="event.eventName == 'TransactionExecuted'">
-                      {{
-                        event.eventName
-                          ? transformI18n("transaction." + event.eventName)
+                        TransactionType[event.eventName].name
+                          ? transformI18n(
+                              "transaction." +
+                                TransactionType[event.eventName].name
+                            )
                           : ""
                       }}
                     </el-tag>
@@ -376,7 +320,10 @@ const handleRevoke = (value: any) => {
                 >
                   {{ transformI18n("transaction.btnRevoke") }}
                 </el-dropdown-item>
-                <el-dropdown-item @click="handleExecute(scope.row)" divided>
+                <el-dropdown-item
+                  @click="handleExecute(scope.row)"
+                  :divided="!scope.row.confirmStatus"
+                >
                   {{ transformI18n("transaction.btnExecute") }}
                 </el-dropdown-item>
               </el-dropdown-menu>

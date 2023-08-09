@@ -1,9 +1,8 @@
 import { markRaw } from "vue";
 import { defineStore } from "pinia";
 import { store } from "@/store";
-import { getChainInfo, defaultRpcUrl } from "@/config/chains";
+import { getChainInfoByChainId, defaultRpcUrl } from "@/config/chains";
 import { JsonRpcProvider } from "@ethersproject/providers";
-import { hexValue } from "@ethersproject/bytes";
 import { useOnboardStoreHook, type ConnectedWalletType } from "./onboard";
 import { WalletState } from "@web3-onboard/core";
 
@@ -34,9 +33,7 @@ const useWeb3Store = defineStore({
     async createWeb3(currentWallet: ConnectedWalletType) {
       const walletProvider = currentWallet;
       if (!this.web3ReadOnly && walletProvider) {
-        const chainInfo = getChainInfo(
-          hexValue(parseInt(walletProvider.chainId))
-        );
+        const chainInfo = getChainInfoByChainId(walletProvider.chainId);
         // if (chainInfo) {
         const web3 = new JsonRpcProvider({
           url: chainInfo ? chainInfo.rpcUrl : defaultRpcUrl,

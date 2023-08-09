@@ -3,8 +3,7 @@ import Web3Modal from "web3modal";
 import { provider } from "web3-core";
 import { defineStore } from "pinia";
 import { store } from "@/store";
-import { getChainInfo } from "@/config/chains";
-import { hexValue } from "@ethersproject/bytes";
+import { getChainInfoByChainId } from "@/config/chains";
 import { useUserStoreHook } from "@/store/modules/user";
 
 export type Web3Type = Web3;
@@ -110,7 +109,7 @@ const useWeb3ModalStore = defineStore({
       if (!account) return null;
 
       const chainId = await web3.eth.getChainId();
-      const chainInfo = getChainInfo(hexValue(parseInt(chainId)));
+      const chainInfo = getChainInfoByChainId(chainId);
 
       this.connectedWallet = {
         label: web3.eth.ens.registryAddress,

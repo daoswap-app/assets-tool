@@ -14,13 +14,12 @@ import {
   type AssetItem,
   type TokenListType
 } from "@/config/constants";
-import { getChainInfo } from "@/config/chains";
+import { getChainInfoByChainId } from "@/config/chains";
 import ERC20_ABI from "@/assets/abi/ERC20_abi.json";
 import Wallet_ABI from "@/assets/abi/Wallet_abi.json";
 import { WALLET_CONTRACT_ADDRESSES } from "@/config/constants";
 import { getContractByABI, weiToEther } from "@/utils/web3";
 import { useWalletStoreHook } from "@/store/modules/wallet";
-import { hexValue } from "@ethersproject/bytes";
 import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 
 defineOptions({
@@ -74,9 +73,7 @@ async function getWeb3() {
   TOKEN_LIST[connectedWallet.value.chainId].map((item: TokenListType) => {
     tokenList.value.push(item.token);
   });
-  chainInfo.value = getChainInfo(
-    hexValue(parseInt(connectedWallet.value.chainId))
-  );
+  chainInfo.value = getChainInfoByChainId(connectedWallet.value.chainId);
 }
 // 查询资产列表
 const getAssets = async () => {
