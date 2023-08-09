@@ -245,6 +245,12 @@ const handleRevoke = (value: any) => {
               {{ dataInfo.value }}
             </p>
           </div>
+          <div v-if="scope.row.type == 1">
+            <p style="word-wrap: break-word">
+              {{ transformI18n("transaction.amount") }}: {{ scope.row.value }}
+              {{ scope.row.tokenSymbol }}
+            </p>
+          </div>
           <el-divider />
           <div class="block">
             <el-timeline v-if="scope.row.events.length > 0">
@@ -294,14 +300,14 @@ const handleRevoke = (value: any) => {
           </div>
         </template>
       </el-table-column>
-      <el-table-column :label="transformI18n('transaction.value')">
+      <!-- <el-table-column :label="transformI18n('transaction.value')">
         <template v-slot="scope">
           <div style="display: flex; align-items: left">
             <span>{{ scope.row.value }}</span>
             <span style="margin-left: 3px">{{ scope.row.tokenSymbol }}</span>
           </div>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column :label="transformI18n('assets.operation')">
         <template v-slot="scope">
           <el-dropdown trigger="click">

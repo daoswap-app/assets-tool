@@ -57,12 +57,17 @@ onMounted(() => {
   init();
 });
 
-const selected = ref("0");
-const timestamp = ref<number>(0);
+const selected = ref<string>("queue");
+const timestampForQueue = ref<number>(0);
+const timestampForHistory = ref<number>(0);
 
-function tabClick({ index }) {
-  selected.value = index;
-  timestamp.value = Date.parse(new Date().toString());
+function tabChange(selectedName: string) {
+  selected.value = selectedName;
+  if (selectedName === "queue") {
+    timestampForQueue.value = Date.parse(new Date().toString());
+  } else if (selectedName === "history") {
+    timestampForHistory.value = Date.parse(new Date().toString());
+  }
 }
 
 // 监听钱包
@@ -83,23 +88,30 @@ useWeb3ModalStoreHook().$subscribe(() => {
         </div>
       </template>
 
-      <el-tabs v-if="currentWallet" v-model="selected" @tab-click="tabClick">
-        <el-tab-pane :label="transformI18n('transaction.queue')" name="0">
+      <el-tabs v-if="currentWallet" v-model="selected" @tab-change="tabChange">
+        <el-tab-pane :label="transformI18n('transaction.queue')" name="queue">
           <Queue
-            v-if="connectedWallet && web3 && currentWallet"
+            v-if="
+              connectedWallet && web3 && currentWallet && selected === 'queue'
+            "
             :connectedWallet="connectedWallet"
             :web3="web3"
             :currentWallet="currentWallet"
-            :key="timestamp"
+            :key="timestampForQueue"
           />
         </el-tab-pane>
-        <el-tab-pane :label="transformI18n('transaction.history')" name="1">
+        <el-tab-pane
+          :label="transformI18n('transaction.history')"
+          name="history"
+        >
           <History
-            v-if="connectedWallet && web3 && currentWallet"
+            v-if="
+              connectedWallet && web3 && currentWallet && selected === 'history'
+            "
             :connectedWallet="connectedWallet"
             :web3="web3"
             :currentWallet="currentWallet"
-            :key="timestamp"
+            :key="timestampForHistory"
           />
         </el-tab-pane>
       </el-tabs>

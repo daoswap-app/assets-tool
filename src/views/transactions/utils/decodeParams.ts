@@ -34,7 +34,6 @@ export function decodeParamsForTransfer(transaction, chainInfo, web3) {
       (item: TokenListType) =>
         item.token.toLowerCase() === transaction.to.toLowerCase()
     );
-    // returnData.methodName = transactionData.method;
     returnData.tokenSymbol =
       tokenList.length > 0 ? tokenList[0].symbol : chainInfo.token;
     returnData.destination = transactionData.inputs[0];
