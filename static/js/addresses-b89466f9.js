@@ -1,0 +1,1 @@
+import{u as s}from"./utils-02cb188c.js";import{i as t}from"./ButtonOfCopy-7cfa85d9.js";const i=r=>t(r)?s.getAddress(r):r,u=r=>{if(!t(r))return!1;try{return s.getAddress(r)===r}catch{return!1}};export{i as c,u as i};
