@@ -3,20 +3,16 @@ import { ref, onMounted } from "vue";
 import { transformI18n } from "@/plugins/i18n";
 import { type ConnectedWalletType } from "@/store/modules/web3Modal";
 import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
-import {
-  EventFromBlock,
-  EventMaxQueryNumber,
-  TransactionType
-} from "@/config/constants";
+import { TransactionType } from "@/config/constants";
 import { getContractByABI } from "@/utils/web3";
 import { compare } from "@/utils/array";
-import { parseTime } from "@/utils/date";
 import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 import { getChainInfoByChainId } from "@/config/chains";
 import {
   decodeParamsForTransfer,
   decodeParamsForOperation
 } from "../utils/decodeParams";
+import { getEventsList } from "../utils/getLogs";
 
 defineOptions({
   name: "TransactionsHistory"
@@ -42,10 +38,6 @@ const loading = ref<boolean>(false);
 const tableDataHistory = ref([]);
 const chainInfo = ref(null);
 
-const fromBlock = ref<number>(0); // EventFromBlock[chainId.value];
-const block = ref<number>(0); // await library.value.eth.getBlock("latest");
-const blockMod = ref<number>(0); // Math.ceil(diffBlock / 5000);
-
 // 方法
 const getTransactionList = async () => {
   loading.value = true;
@@ -54,12 +46,6 @@ const getTransactionList = async () => {
     MultiSigWallet_ABI,
     props.currentWallet,
     props.web3
-  );
-  // 获取block数据
-  fromBlock.value = EventFromBlock[props.connectedWallet.chainId];
-  block.value = await props.web3.eth.getBlockNumber();
-  blockMod.value = Math.ceil(
-    (block.value - fromBlock.value) / EventMaxQueryNumber
   );
 
   // 重置数据
@@ -72,14 +58,6 @@ const getTransactionList = async () => {
     .getTransactionIds(2)
     .call();
   const transactionIds = transactionApprovedIds.concat(transactionRevokeIds);
-  // 获取日志记录
-  const allEvents = await contract.getPastEvents("allEvents", {
-    filter: {
-      transactionId: transactionIds
-    },
-    fromBlock: fromBlock.value,
-    toBlock: "latest"
-  });
   const getResults = transactionIds.map(async (id: string) => {
     const transaction = await contract.methods.getTransaction(id).call();
     const transactionConfirmationStatus = await contract.methods
@@ -88,6 +66,16 @@ const getTransactionList = async () => {
     // 当前chain信息
     const chainId = await props.web3.eth.getChainId();
     chainInfo.value = getChainInfoByChainId(chainId);
+    // 获取日志记录
+    const filter = {
+      transactionId: id
+    };
+    const allEvents = await getEventsList(
+      contract,
+      chainId,
+      props.web3,
+      filter
+    );
     // 组装单笔交易的数据
     const defaultItemData = {
       id: id,
@@ -101,7 +89,7 @@ const getTransactionList = async () => {
       confirmStatus: transactionConfirmationStatus,
       type: 1, // 处理交易数据，1-转账，2-操作
       methodName: "",
-      events: []
+      events: allEvents // []
     };
     let returnData = null;
     // 目标地址等于钱包地址为操作，其它为转账
@@ -112,36 +100,6 @@ const getTransactionList = async () => {
     }
     // 合并数据
     const tempItem = { ...defaultItemData, ...returnData };
-
-    // 过滤日志
-    const events = await allEvents.filter((item: any) => {
-      if (
-        item.returnValues.transactionId &&
-        item.returnValues.transactionId == id
-      ) {
-        return item;
-      }
-    });
-    if (events.length > 0) {
-      const getResultForEvent = events.map(async (event: any) => {
-        const txDetail = await props.web3.eth.getTransaction(
-          event.transactionHash
-        );
-        const eventItem = {
-          eventName: event.event,
-          ...event.returnValues,
-          ...{
-            transactionHash: event.transactionHash,
-            blockNumber: event.blockNumber,
-            from: txDetail.from,
-            createTime: parseTime(event.returnValues.createTime)
-          }
-        };
-        tempItem.events.push(eventItem);
-      });
-      await Promise.all(getResultForEvent);
-      tempItem.events.sort(compare("blockNumber"));
-    }
 
     tableDataHistory.value.push(tempItem);
   });

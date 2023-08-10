@@ -11,7 +11,7 @@ export const EventFromBlock: { [chainId: string]: number } = {
   [chainIds.bnbt]: 29090975,
   [chainIds.bnb]: 30607373
 };
-export const EventMaxQueryNumber = 5000;
+export const EventMaxQueryNumber = 1000000;
 
 // token list
 export const TOKEN_LIST: { [chainId: string]: TokenListType[] } = {
@@ -54,7 +54,49 @@ export const TransactionType = {
   }
 };
 
+export const EventNameList = [
+  // "WalletCreated",
+  "TransactionCreated",
+  "TransactionConfirmed",
+  "TransactionExecuted",
+  "TransactionRevoke"
+];
+
 // TODO：类型，后期要移走
+// Exported Types
+type ConnectionInfo = {
+  url: string;
+  headers?: { [key: string]: string | number };
+
+  user?: string;
+  password?: string;
+
+  allowInsecureAuthentication?: boolean;
+  allowGzip?: boolean;
+
+  throttleLimit?: number;
+  throttleSlotInterval?: number;
+  throttleCallback?: (attempt: number, url: string) => Promise<boolean>;
+
+  timeout?: number;
+};
+export interface Chain {
+  namespace?: "evm";
+  id: string;
+  chainId: number;
+  rpcUrl: string;
+  label: string;
+  token: string;
+  color?: string;
+  icon?: string;
+  providerConnectionInfo?: ConnectionInfo;
+  publicRpcUrl?: string;
+  blockExplorerUrl?: string;
+}
+export type ChainWithDecimalId = Omit<Chain, "id"> & {
+  id: number;
+};
+
 export type TokenListType = {
   token: string;
   symbol: string;

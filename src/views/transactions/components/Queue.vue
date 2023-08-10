@@ -4,16 +4,16 @@ import { transformI18n } from "@/plugins/i18n";
 import { type ConnectedWalletType } from "@/store/modules/web3Modal";
 import ArrowDownSLine from "@iconify-icons/ri/arrow-down-s-line";
 import MultiSigWallet_ABI from "@/assets/abi/MultiSigWallet_abi.json";
-import { EventFromBlock, TransactionType } from "@/config/constants";
+import { TransactionType } from "@/config/constants";
 import { getContractByABI } from "@/utils/web3";
 import { compare } from "@/utils/array";
-import { parseTime } from "@/utils/date";
 import ButtonOfCopy from "@/components/common/ButtonOfCopy.vue";
 import { getChainInfoByChainId } from "@/config/chains";
 import {
   decodeParamsForTransfer,
   decodeParamsForOperation
 } from "../utils/decodeParams";
+import { getEventsList } from "../utils/getLogs";
 
 defineOptions({
   name: "TransactionsQueue"
@@ -37,9 +37,6 @@ const props = defineProps({
 // 变量
 const loading = ref<boolean>(false);
 const tableDataQueue = ref([]);
-const chainInfo = ref(null);
-
-const fromBlock = ref<number>(0); // EventFromBlock[chainId.value];
 
 // 方法
 const getTransactionList = async () => {
@@ -50,8 +47,6 @@ const getTransactionList = async () => {
     props.currentWallet,
     props.web3
   );
-  // 获取block数据
-  fromBlock.value = EventFromBlock[props.connectedWallet.chainId];
 
   // 重置数据
   tableDataQueue.value = [];
@@ -59,14 +54,6 @@ const getTransactionList = async () => {
   const transactionPendingIds = await contract.methods
     .getTransactionIds(0)
     .call();
-  // 获取日志记录
-  const allEvents = await contract.getPastEvents("allEvents", {
-    filter: {
-      transactionId: transactionPendingIds
-    },
-    fromBlock: fromBlock.value,
-    toBlock: "latest"
-  });
   // 查询交易详情
   const getResultForPending = transactionPendingIds.map(async (id: string) => {
     const transaction = await contract.methods.getTransaction(id).call();
@@ -75,7 +62,17 @@ const getTransactionList = async () => {
       .call();
     // 当前chain信息
     const chainId = await props.web3.eth.getChainId();
-    chainInfo.value = getChainInfoByChainId(chainId);
+    const chainInfo = getChainInfoByChainId(chainId);
+    // 获取日志记录
+    const filter = {
+      transactionId: id
+    };
+    const allEvents = await getEventsList(
+      contract,
+      chainId,
+      props.web3,
+      filter
+    );
     // 组装单笔交易的数据
     const defaultItemData = {
       id: id,
@@ -89,51 +86,17 @@ const getTransactionList = async () => {
       confirmStatus: transactionConfirmationStatus,
       type: 1, // 处理交易数据，1-转账，2-操作
       methodName: "",
-      events: []
+      events: allEvents // []
     };
     let returnData = null;
     // 目标地址等于钱包地址为操作，其它为转账
     if (transaction.to.toLowerCase() === props.currentWallet.toLowerCase()) {
       returnData = decodeParamsForOperation(transaction);
     } else {
-      returnData = decodeParamsForTransfer(
-        transaction,
-        chainInfo.value,
-        props.web3
-      );
+      returnData = decodeParamsForTransfer(transaction, chainInfo, props.web3);
     }
     // 合并数据
     const tempItem = { ...defaultItemData, ...returnData };
-
-    // 过滤日志
-    const events = await allEvents.filter((item: any) => {
-      if (
-        item.returnValues.transactionId &&
-        item.returnValues.transactionId == id
-      ) {
-        return item;
-      }
-    });
-    if (events.length > 0) {
-      const getResultForEvent = events.map(async (event: any) => {
-        const txDetail = await props.web3.eth.getTransaction(
-          event.transactionHash
-        );
-        const eventItem = {
-          eventName: event.event,
-          ...event.returnValues,
-          ...{
-            transactionHash: event.transactionHash,
-            blockNumber: event.blockNumber,
-            from: txDetail.from,
-            createTime: parseTime(event.returnValues.createTime)
-          }
-        };
-        tempItem.events.push(eventItem);
-      });
-      await Promise.all(getResultForEvent);
-      tempItem.events.sort(compare("blockNumber"));
-    }
 
     tableDataQueue.value.push(tempItem);
   });

@@ -1,4 +1,4 @@
-import type { Chain, ChainWithDecimalId } from "@web3-onboard/common";
+import type { Chain, ChainWithDecimalId } from "./constants";
 import { hexValue } from "@ethersproject/bytes";
 
 export const defaultRpcUrl = "https://bsc-dataseed3.defibit.io";
@@ -6,6 +6,7 @@ export const defaultRpcUrl = "https://bsc-dataseed3.defibit.io";
 export const chains: (Chain | ChainWithDecimalId)[] = [
   {
     id: "0x539",
+    chainId: 1337,
     namespace: "evm",
     token: "ETH",
     label: "Localhost",
@@ -16,6 +17,7 @@ export const chains: (Chain | ChainWithDecimalId)[] = [
   },
   {
     id: "0x38",
+    chainId: 56,
     namespace: "evm",
     token: "BNB",
     label: "BSC Mainnet",
@@ -27,13 +29,14 @@ export const chains: (Chain | ChainWithDecimalId)[] = [
   },
   {
     id: "0x61",
+    chainId: 97,
     namespace: "evm",
     token: "tBNB",
     label: "BSC Testnet",
-    rpcUrl: "https://endpoints.omniatech.io/v1/bsc/testnet/public",
+    rpcUrl: "https://data-seed-prebsc-1-s2.bnbchain.org:8545",
     color: "green",
     // icon: "https://tokenlists.daoswap.cc/daoswap.svg",
-    publicRpcUrl: "https://endpoints.omniatech.io/v1/bsc/testnet/public",
+    publicRpcUrl: "https://data-seed-prebsc-1-s2.bnbchain.org:8545",
     blockExplorerUrl: "https://testnet.bscscan.com"
     // "https://endpoints.omniatech.io/v1/bsc/testnet/public",
     // https://bsc-testnet.public.blastapi.io
