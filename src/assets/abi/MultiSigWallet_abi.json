@@ -120,6 +120,12 @@
       },
       {
         "indexed": true,
+        "internalType": "uint256",
+        "name": "transactionId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
         "internalType": "address",
         "name": "to",
         "type": "address"
@@ -135,12 +141,6 @@
         "internalType": "bytes",
         "name": "data",
         "type": "bytes"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "transactionId",
-        "type": "uint256"
       },
       {
         "indexed": false,
@@ -398,6 +398,11 @@
     "name": "transactions",
     "outputs": [
       {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "to",
         "type": "address"
@@ -565,6 +570,11 @@
     "name": "getTransaction",
     "outputs": [
       {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "to",
         "type": "address"
@@ -593,6 +603,11 @@
         "internalType": "uint256",
         "name": "revokes",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "blockArray",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",

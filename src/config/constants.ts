@@ -2,16 +2,16 @@ import { chainIds } from "./chains";
 
 // Wallet Contract Address
 export const WALLET_CONTRACT_ADDRESSES: { [chainId: string]: string } = {
-  [chainIds.localhost]: "0x8FfA6eC4cDFb3210C141C0b44Fc825521e4289FB",
-  [chainIds.bnbt]: "0x1B08d2E45219c57dce50410bd73880AcFD2bEe36",
-  [chainIds.bnb]: "0x7e932EA8c579Af1F16cC6BC09a3d85a103752D31"
+  [chainIds.localhost]: "0xb6B4C9efcAbAd3cc2E88980AF20C9b312F431e1D",
+  [chainIds.bnbt]: "0x612B8b31552812b399e95f2e771d7182Aa418805", // "0x4D19c3e67D83CA0D50CeeA99dDd4f86C7990c960", // "0x1B08d2E45219c57dce50410bd73880AcFD2bEe36",
+  [chainIds.bnb]: "0xd02550A70a1628E44ea83214B1e60Fe7C4eE5b44" //"0x7e932EA8c579Af1F16cC6BC09a3d85a103752D31"
 };
 export const EventFromBlock: { [chainId: string]: number } = {
-  [chainIds.localhost]: 13,
-  [chainIds.bnbt]: 29090975,
+  [chainIds.localhost]: 59,
+  [chainIds.bnbt]: 32490068, // 29090975,
   [chainIds.bnb]: 30607373
 };
-export const EventMaxQueryNumber = 1000000;
+export const EventMaxQueryNumber = 10000;
 
 // token list
 export const TOKEN_LIST: { [chainId: string]: TokenListType[] } = {
@@ -53,14 +53,6 @@ export const TransactionType = {
     tagType: ""
   }
 };
-
-export const EventNameList = [
-  // "WalletCreated",
-  "TransactionCreated",
-  "TransactionConfirmed",
-  "TransactionExecuted",
-  "TransactionRevoke"
-];
 
 // TODO：类型，后期要移走
 // Exported Types

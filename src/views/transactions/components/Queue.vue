@@ -13,7 +13,7 @@ import {
   decodeParamsForTransfer,
   decodeParamsForOperation
 } from "../utils/decodeParams";
-import { getEventsList } from "../utils/getLogs";
+import { getEventListByTransaction } from "../utils/getLogs";
 
 defineOptions({
   name: "TransactionsQueue"
@@ -55,7 +55,7 @@ const getTransactionList = async () => {
     .getTransactionIds(0)
     .call();
   // 查询交易详情
-  const getResultForPending = transactionPendingIds.map(async (id: string) => {
+  const getResultForPending = transactionPendingIds.map(async (id: number) => {
     const transaction = await contract.methods.getTransaction(id).call();
     const transactionConfirmationStatus = await contract.methods
       .getTransactionConfirmationStatus(id, props.connectedWallet.address)
@@ -64,15 +64,7 @@ const getTransactionList = async () => {
     const chainId = await props.web3.eth.getChainId();
     const chainInfo = getChainInfoByChainId(chainId);
     // 获取日志记录
-    const filter = {
-      transactionId: id
-    };
-    const allEvents = await getEventsList(
-      contract,
-      chainId,
-      props.web3,
-      filter
-    );
+    const allEvents = await getEventListByTransaction(contract, transaction);
     // 组装单笔交易的数据
     const defaultItemData = {
       id: id,

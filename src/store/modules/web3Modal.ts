@@ -1,5 +1,6 @@
 import Web3 from "web3";
 import Web3Modal from "web3modal";
+// import WalletConnectProvider from "@walletconnect/ethereum-provider";
 import { provider } from "web3-core";
 import { defineStore } from "pinia";
 import { store } from "@/store";
@@ -66,6 +67,16 @@ const useWeb3ModalStore = defineStore({
     async initWeb3Modal() {
       const providerOptions = {
         /* See Provider Options Section */
+        // walletconnect: {
+        //   package: WalletConnectProvider,
+        //   packageFactory: true,
+        //   options: {
+        //     rpc: {
+        //       56: "https://bsc-dataseed4.ninicoin.io",
+        //       97: "https://data-seed-prebsc-1-s2.bnbchain.org:8545"
+        //     }
+        //   }
+        // }
       };
 
       const web3Modal = new Web3Modal({
@@ -78,6 +89,15 @@ const useWeb3ModalStore = defineStore({
       // 添加监听
       this.subscribeProvider(provider);
       const web3 = new Web3(provider);
+      // web3.eth.extend({
+      //   methods: [
+      //     {
+      //       name: "chainId",
+      //       call: "eth_chainId",
+      //       outputFormatter: web3.utils.hexToNumber
+      //     }
+      //   ]
+      // });
       return web3;
     },
     // 初始化钱包连接

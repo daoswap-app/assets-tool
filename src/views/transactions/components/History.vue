@@ -12,7 +12,7 @@ import {
   decodeParamsForTransfer,
   decodeParamsForOperation
 } from "../utils/decodeParams";
-import { getEventsList } from "../utils/getLogs";
+import { getEventListByTransaction } from "../utils/getLogs";
 
 defineOptions({
   name: "TransactionsHistory"
@@ -67,15 +67,7 @@ const getTransactionList = async () => {
     const chainId = await props.web3.eth.getChainId();
     chainInfo.value = getChainInfoByChainId(chainId);
     // 获取日志记录
-    const filter = {
-      transactionId: id
-    };
-    const allEvents = await getEventsList(
-      contract,
-      chainId,
-      props.web3,
-      filter
-    );
+    const allEvents = await getEventListByTransaction(contract, transaction);
     // 组装单笔交易的数据
     const defaultItemData = {
       id: id,
